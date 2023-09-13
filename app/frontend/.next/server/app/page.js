@@ -421,7 +421,7 @@ function Home() {
     const queryClient = (0,QueryClientProvider/* useQueryClient */.NL)();
     console.log(process.env);
     const startTrain = async ()=>{
-        const response = await axios/* default */.Z.post(`https://${backendUrl}:${backendPort}/startTrain`);
+        const response = await axios/* default */.Z.post(`https://horizontal-scaling.up.railway.app/api/startTrain`);
         return response.data;
     };
     const mutation = (0,useMutation/* useMutation */.D)(startTrain, {

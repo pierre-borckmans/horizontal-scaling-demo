@@ -25,7 +25,7 @@ export default function Home() {
   console.log(process.env);
   const startTrain = async () => {
     const response = await axios.post(
-      `https://${backendUrl}:${backendPort}/startTrain`
+      `https://horizontal-scaling.up.railway.app/api/startTrain`
     );
     return response.data;
   };

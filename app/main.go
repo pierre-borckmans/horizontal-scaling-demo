@@ -104,6 +104,7 @@ func newServer() *echo.Echo {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods: []string{echo.GET, echo.POST},
 	}))
 
 	fsys, err := fs.Sub(embeddedFiles, "frontend/out")
@@ -115,8 +116,35 @@ func newServer() *echo.Echo {
 
 	e.GET("/*", echo.WrapHandler(http.FileServer(hfsys)))
 
+	e.POST("/startTrain", handleStartTrain)
 	e.GET("/ws", handleWebSocket)
 	return e
+}
+
+func handleStartTrain(c echo.Context) error {
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", fmt.Sprintf("https://%s:3333/startTrain", BackendHost), nil)
+	if err != nil {
+		c.Logger().Error(err)
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		c.Logger().Error(err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("received non-OK status code: %d", resp.StatusCode)
+		c.Logger().Error(err)
+		return err
+	}
+
+	return nil
 }
 
 func handleWebSocket(c echo.Context) error {
