@@ -172,16 +172,24 @@ export default function Home() {
             Start 10 Trains
           </button>
           <div>Duration: {duration ? `${duration}ms` : "waiting..."}</div>
-          {tracks.sort().map((track, index) => (
-            <>
-              <Track
-                ip={track}
-                trains={trains.filter((train) => train.track === track)}
-                key={track}
-                index={index}
-              />
-            </>
-          ))}
+          <div className="flex w-full flex-col gap-10">
+            {tracks.sort().map((track, index) => (
+              <>
+                <Track
+                  ip={track}
+                  trains={trains.filter((train) => train.track === track)}
+                  key={track}
+                  index={index}
+                />
+                <Track
+                  ip={track}
+                  trains={trains.filter((train) => train.track === track)}
+                  key={track}
+                  index={index}
+                />
+              </>
+            ))}
+          </div>
         </div>
       </main>
     </>

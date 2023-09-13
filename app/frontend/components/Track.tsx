@@ -74,7 +74,7 @@ export default function Track({ trains, ip, index }: Props) {
           </div>
         ))}
       </div>
-      <span className="font-bold text-purple-600">
+      <span className="font-bold text-[#4f98c4]">
         Track {index + 1} : [{ip}]
       </span>
     </div>
