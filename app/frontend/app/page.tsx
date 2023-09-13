@@ -43,6 +43,15 @@ export default function Home() {
 
   const [trains, setTrains] = useState<TrainInfo[]>([]);
   const [tracks, setTracks] = useState<string[]>([]);
+  const [timerStart, setTimerStart] = useState<number | null>(null);
+  const [duration, setDuration] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (timerStart && Date.now() - timerStart > 800 && trains.length === 0) {
+      setDuration(Date.now() - timerStart);
+      setTimerStart(null);
+    }
+  }, [timerStart, trains.length]);
 
   useEffect(() => {
     console.log("Connecting to WebSocket");
@@ -133,6 +142,7 @@ export default function Home() {
           <button
             className="flex w-fit border px-2 py-1"
             onClick={() => {
+              setTimerStart(Date.now());
               mutation.mutate();
             }}
           >
@@ -141,6 +151,7 @@ export default function Home() {
           <button
             className="flex w-fit border px-2 py-1"
             onClick={() => {
+              setTimerStart(Date.now());
               for (let i = 0; i < 10; i++) {
                 mutation.mutate();
               }
@@ -148,6 +159,7 @@ export default function Home() {
           >
             Start 10 Trains
           </button>
+          {duration && <div>Duration: {duration}ms</div>}
           {tracks.sort().map((track) => (
             <Track
               ip={track}
