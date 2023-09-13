@@ -136,7 +136,17 @@ export default function Home() {
               mutation.mutate();
             }}
           >
-            Start Train
+            Start 1 Train
+          </button>
+          <button
+            className="flex w-fit border px-2 py-1"
+            onClick={() => {
+              for (let i = 0; i < 10; i++) {
+                mutation.mutate();
+              }
+            }}
+          >
+            Start 10 Trains
           </button>
           {tracks.sort().map((track) => (
             <Track
