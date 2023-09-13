@@ -14,6 +14,7 @@ export interface TrainInfo {
   id: string;
   position: number;
   speed: number;
+  braking: boolean;
 }
 
 export default function Home() {
@@ -143,6 +144,7 @@ export default function Home() {
             className="flex w-fit border px-2 py-1"
             onClick={() => {
               setTimerStart(Date.now());
+              setDuration(null);
               mutation.mutate();
             }}
           >
@@ -152,6 +154,7 @@ export default function Home() {
             className="flex w-fit border px-2 py-1"
             onClick={() => {
               setTimerStart(Date.now());
+              setDuration(null);
               for (let i = 0; i < 10; i++) {
                 mutation.mutate();
               }
@@ -159,13 +162,16 @@ export default function Home() {
           >
             Start 10 Trains
           </button>
-          {duration && <div>Duration: {duration}ms</div>}
-          {tracks.sort().map((track) => (
-            <Track
-              ip={track}
-              trains={trains.filter((train) => train.track === track)}
-              key={track}
-            />
+          <div>Duration: {duration ? `${duration}ms` : "waiting..."}</div>
+          {tracks.sort().map((track, index) => (
+            <>
+              <Track
+                ip={track}
+                trains={trains.filter((train) => train.track === track)}
+                key={track}
+                index={index}
+              />
+            </>
           ))}
         </div>
       </main>

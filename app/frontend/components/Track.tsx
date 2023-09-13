@@ -5,9 +5,10 @@ import { TrainInfo } from "@/app/page";
 type Props = {
   ip: string;
   trains: TrainInfo[];
+  index: number;
 };
 
-export default function Track({ trains, ip }: Props) {
+export default function Track({ trains, ip, index }: Props) {
   return (
     <div className="flex h-full w-full flex-col items-center gap-2 px-40">
       <div
@@ -25,23 +26,46 @@ export default function Track({ trains, ip }: Props) {
             key={train.id}
             className="absolute h-full w-full items-center justify-center transition-all"
             style={{
-              top: "calc(50% - 12.5px)",
-              left: `${train.position * 0.9}%`,
-              transitionTimingFunction: "linear",
+              top:
+                train.position === 100
+                  ? -140 - 50 * index
+                  : "calc(50% - 12.5px)",
+              left: `${
+                train.position === 100
+                  ? 130
+                  : train.position === 0
+                  ? -10
+                  : train.position
+              }%`,
+              transform: `rotate(-${
+                train.position === 100 ? 80 + index * 5 : 0
+              }deg)`,
+              transformOrigin: "center left",
+              transitionDuration: `${train.position === 100 ? 2 : 0.3}s`,
+              opacity: train.position === 100 || train.position === 0 ? 0 : 100,
+              scale: train.position === 100 ? 0.1 : 1,
+              transitionTimingFunction:
+                train.position === 100 ? "ease-out" : "linear",
             }}
           >
             <Train1
-              className="transition-all duration-[2000ms]"
+              className="transition-all"
               style={{
-                width: "8%",
+                width: "12%",
                 height: 25,
-                opacity: train.position === 100 ? 0 : 100,
+                color: train.braking
+                  ? "red"
+                  : train.position === 100
+                  ? "lime"
+                  : "white",
               }}
             />
           </div>
         ))}
       </div>
-      Track {ip}
+      <span className="font-bold text-purple-600">
+        Track {index + 1} : [{ip}]
+      </span>
     </div>
   );
 }

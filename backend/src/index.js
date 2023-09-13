@@ -15,7 +15,7 @@ server.listen(httpPort, () => {
 });
 
 let trains = [];
-const trainLength = 8; // Train length set to 2%
+const trainLength = 12; // in % of the track
 const refreshInterval = 50; // Refresh rate in milliseconds
 const timeFactor = 1000 / refreshInterval; // Factor to adjust speed
 const minSpeed = 20;
@@ -44,6 +44,7 @@ setInterval(() => {
     if (!trains[i]) continue;
 
     let currentSpeed = trains[i].speed;
+    let braking = false;
 
     if (
       i > 0 &&
@@ -56,6 +57,7 @@ setInterval(() => {
         trains[i - 1].position - trainLength - 1,
       );
       currentSpeed = trains[i].position === 0 ? 0 : trains[i - 1].speed;
+      braking = true;
     } else {
       // Move the train
       trains[i].position = Math.min(
@@ -68,7 +70,12 @@ setInterval(() => {
       wss.clients.forEach((client) => {
         if (client.readyState === WebSocket.OPEN) {
           client.send(
-            JSON.stringify({ id: trains[i].id, position: 100, speed: 0 }),
+            JSON.stringify({
+              id: trains[i].id,
+              position: 100,
+              speed: 0,
+              braking: false,
+            }),
           );
         }
       });
@@ -84,6 +91,7 @@ setInterval(() => {
             id: trains[i].id,
             position: trains[i].position,
             speed: currentSpeed,
+            braking,
           }),
         );
       }
