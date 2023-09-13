@@ -25,7 +25,7 @@ export default function Home() {
   console.log(process.env);
   const startTrain = async () => {
     const response = await axios.post(
-      `http://${backendUrl}:${backendPort}/startTrain`
+      `https://${backendUrl}:${backendPort}/startTrain`
     );
     return response.data;
   };
@@ -38,7 +38,8 @@ export default function Home() {
 
   useEffect(() => {
     console.log("Connecting to WebSocket");
-    const ws = new WebSocket(`ws://localhost:${httpPort}/ws`);
+    const ws = new WebSocket(`wss://horizontal-scaling.up.railway.app/ws`);
+    // const ws = new WebSocket(`ws://localhost:${httpPort}/ws`);
 
     ws.addEventListener("open", () => {
       console.log("WebSocket connection opened");
