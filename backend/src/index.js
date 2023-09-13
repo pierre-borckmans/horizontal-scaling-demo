@@ -1,5 +1,5 @@
 const express = require("express");
-const http = require("http");
+const https = require("https");
 const WebSocket = require("ws");
 const { v4: uuidv4 } = require("uuid");
 const cors = require("cors");
@@ -8,7 +8,7 @@ const wsPort = 3333;
 
 const app = express();
 app.use(cors());
-const server = http.createServer(app);
+const server = https.createServer(app);
 const wss = new WebSocket.Server({ port: wsPort });
 server.listen(httpPort, () => {
   console.log(`Server started on http://0.0.0.0:${httpPort}/`);
