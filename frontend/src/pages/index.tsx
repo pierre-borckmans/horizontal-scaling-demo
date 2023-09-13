@@ -18,7 +18,7 @@ const Home: NextPage = () => {
   const [trains, setTrains] = useState<TrainInfo[]>([]);
   const queryClient = useQueryClient();
 
-  console.log(backendUrl);
+  console.log(process.env);
   const startTrain = async () => {
     const response = await axios.post(
       `http://${backendUrl}:${httpPort}/startTrain`
