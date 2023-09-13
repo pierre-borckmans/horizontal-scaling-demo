@@ -18,14 +18,16 @@ export interface TrainInfo {
 
 export default function Home() {
   // const backendUrl = "localhost";
-  const backendUrl = "backend.railway.internal";
+  const backendUrl =
+    process.env.NODE_ENV === "development"
+      ? "localhost"
+      : "horizontal-scaling.up.railway.app";
+  const wsProtocol = process.env.NODE_ENV === "development" ? "ws" : "wss";
 
   const queryClient = useQueryClient();
 
   const startTrain = async () => {
-    const response = await axios.post(
-      `https://horizontal-scaling.up.railway.app/startTrain`
-    );
+    const response = await axios.post(`http://${backendUrl}/startTrain`);
     return response.data;
   };
 
@@ -37,9 +39,10 @@ export default function Home() {
 
   const [trains, setTrains] = useState<TrainInfo[]>([]);
   const [tracks, setTracks] = useState<string[]>([]);
+
   useEffect(() => {
     console.log("Connecting to WebSocket");
-    const ws = new WebSocket(`wss://horizontal-scaling.up.railway.app/ws`);
+    const ws = new WebSocket(`${wsProtocol}://${backendUrl}/ws`);
     // const ws = new WebSocket(`ws://localhost:${httpPort}/ws`);
 
     ws.addEventListener("open", () => {
@@ -53,8 +56,12 @@ export default function Home() {
     ws.addEventListener("message", (event) => {
       const trainData = JSON.parse(event.data) as TrainInfo;
 
+      console.log(trainData.track);
       setTracks((prevTracks) => {
-        return [...prevTracks.filter(t => t!==trainData.track), trainData.track]
+        return [
+          ...prevTracks.filter((t) => t !== trainData.track),
+          trainData.track,
+        ];
       });
 
       setTrains((prevTrains) => {
@@ -68,16 +75,18 @@ export default function Home() {
           return updatedTrains;
         }
 
-        setTimeout(() => {
-          if (trainData.position === 100) {
-            setTrains((prevTrains) => {
-              return prevTrains.filter(train => train.id !== trainData.id);
-            });
-          }
-        }, 1000);
-
         return [...prevTrains, trainData];
       });
+
+      setTimeout(() => {
+        console.log(trainData.position);
+        if (trainData.position === 100) {
+          console.log("TRAIN ARRIVED");
+          setTrains((prevTrains) => {
+            return prevTrains.filter((train) => train.id !== trainData.id);
+          });
+        }
+      }, 1000);
     });
 
     return () => {
@@ -114,7 +123,6 @@ export default function Home() {
         }}
       >
         <div className="flex h-full w-full flex-col gap-4 text-white">
-          <h1>Train Status yo</h1>
           <button
             className="flex w-fit border px-2 py-1"
             onClick={() => {
@@ -123,9 +131,13 @@ export default function Home() {
           >
             Start Train
           </button>
-          {tracks.sort().map(track =>
-            <Track trains={trains.filter(train => train.track === track)} key={track}/>
-          )}
+          {tracks.sort().map((track) => (
+            <Track
+              ip={track}
+              trains={trains.filter((train) => train.track === track)}
+              key={track}
+            />
+          ))}
         </div>
       </main>
     </>

@@ -37,7 +37,7 @@ var (
 func init() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr, TimeFormat: time.RFC3339})
 	if ListenPort == "" {
-		ListenPort = "4000"
+		ListenPort = "80"
 	}
 	if BackendHost == "" {
 		BackendHost = "localhost"

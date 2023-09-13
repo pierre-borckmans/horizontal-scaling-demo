@@ -379,29 +379,37 @@ var train1_default = /*#__PURE__*/__webpack_require__.n(train1);
 
 
 
-function Track({ trains }) {
-    return /*#__PURE__*/ jsx_runtime_.jsx("div", {
-        className: "relative flex h-8 w-full",
-        style: {
-            background: `linear-gradient(0deg,
+function Track({ trains, ip }) {
+    return /*#__PURE__*/ (0,jsx_runtime_.jsxs)("div", {
+        className: "flex h-full w-full flex-col items-center gap-2 px-40",
+        children: [
+            /*#__PURE__*/ jsx_runtime_.jsx("div", {
+                className: "relative flex h-[1vw] w-full",
+                style: {
+                    background: `linear-gradient(90deg,
           rgb(255 255 255/0) 0%,
           hsla(220, 62%, 25%, .5) 15%,
           hsla(220, 62%, 25%, .5) 85%,
           rgb(255 255 255/0) 100%)`
-        },
-        children: trains.map((train)=>/*#__PURE__*/ jsx_runtime_.jsx("div", {
-                className: "absolute flex transition-all",
-                style: {
-                    top: 0,
-                    left: `${train.position}%`
                 },
-                children: /*#__PURE__*/ jsx_runtime_.jsx((train1_default()), {
-                    style: {
-                        width: 200,
-                        height: 32
-                    }
-                })
-            }))
+                children: trains.map((train)=>/*#__PURE__*/ jsx_runtime_.jsx("div", {
+                        className: "absolute h-full w-full items-center justify-center transition-all",
+                        style: {
+                            top: "calc(50% - 12.5px)",
+                            left: `${train.position * 0.9}%`,
+                            transitionTimingFunction: "linear"
+                        },
+                        children: /*#__PURE__*/ jsx_runtime_.jsx((train1_default()), {
+                            style: {
+                                width: "8%",
+                                height: 25
+                            }
+                        })
+                    }, train.id))
+            }),
+            "Track ",
+            ip
+        ]
     });
 }
 
@@ -416,10 +424,11 @@ const httpPort = 4000;
 const backendPort = 3300;
 function Home() {
     // const backendUrl = "localhost";
-    const backendUrl = "backend.railway.internal";
+    const backendUrl =  false ? 0 : "horizontal-scaling.up.railway.app";
+    const wsProtocol =  false ? 0 : "wss";
     const queryClient = (0,QueryClientProvider/* useQueryClient */.NL)();
     const startTrain = async ()=>{
-        const response = await axios/* default */.Z.post(`https://horizontal-scaling.up.railway.app/startTrain`);
+        const response = await axios/* default */.Z.post(`http://${backendUrl}/startTrain`);
         return response.data;
     };
     const mutation = (0,useMutation/* useMutation */.D)(startTrain, {
@@ -433,7 +442,7 @@ function Home() {
     const [tracks, setTracks] = (0,react_.useState)([]);
     (0,react_.useEffect)(()=>{
         console.log("Connecting to WebSocket");
-        const ws = new WebSocket(`wss://horizontal-scaling.up.railway.app/ws`);
+        const ws = new WebSocket(`${wsProtocol}://${backendUrl}/ws`);
         // const ws = new WebSocket(`ws://localhost:${httpPort}/ws`);
         ws.addEventListener("open", ()=>{
             console.log("WebSocket connection opened");
@@ -443,6 +452,7 @@ function Home() {
         });
         ws.addEventListener("message", (event)=>{
             const trainData = JSON.parse(event.data);
+            console.log(trainData.track);
             setTracks((prevTracks)=>{
                 return [
                     ...prevTracks.filter((t)=>t !== trainData.track),
@@ -463,6 +473,15 @@ function Home() {
                     trainData
                 ];
             });
+            setTimeout(()=>{
+                console.log(trainData.position);
+                if (trainData.position === 100) {
+                    console.log("TRAIN ARRIVED");
+                    setTrains((prevTrains)=>{
+                        return prevTrains.filter((train)=>train.id !== trainData.id);
+                    });
+                }
+            }, 1000);
         });
         return ()=>{
             ws.close();
@@ -504,9 +523,6 @@ function Home() {
                 children: /*#__PURE__*/ (0,jsx_runtime_.jsxs)("div", {
                     className: "flex h-full w-full flex-col gap-4 text-white",
                     children: [
-                        /*#__PURE__*/ jsx_runtime_.jsx("h1", {
-                            children: "Train Status yo"
-                        }),
                         /*#__PURE__*/ jsx_runtime_.jsx("button", {
                             className: "flex w-fit border px-2 py-1",
                             onClick: ()=>{
@@ -515,6 +531,7 @@ function Home() {
                             children: "Start Train"
                         }),
                         tracks.sort().map((track)=>/*#__PURE__*/ jsx_runtime_.jsx(Track, {
+                                ip: track,
                                 trains: trains.filter((train)=>train.track === track)
                             }, track))
                     ]
@@ -653,7 +670,7 @@ const __default__ = proxy.default;
 var React = __webpack_require__(8038);
 
 function Train1 (props) {
-    return React.createElement("svg",props,[React.createElement("g",{"transform":"translate(0, 25) rotate(-90)","key":0},[React.createElement("path",{"d":"M13 .5c3.072 0 5.94 2.183 8.073 5.297C23.197 8.9 24.5 12.803 24.5 16v75c0 3.22-1.099 7.38-3.116 10.727-2.022 3.355-4.889 5.773-8.384 5.773-3.05 0-5.919-2.404-8.063-5.783C2.807 98.36 1.5 94.202 1.5 91V16c0-3.197 1.303-7.1 3.427-10.203C7.06 2.683 9.928.5 13 .5Z","fill":"url(#e4sqbxb6za)","stroke":"#306EE8","key":0}),React.createElement("path",{"d":"M21 85.273V84s-2.214 2.727-8 2.727S5 84 5 84v1.273S7.857 90 13 90s8-4.727 8-4.727Z","fill":"#BACFF7","key":1}),React.createElement("path",{"d":"M7 16.5a.5.5 0 0 1 1 0v60a.5.5 0 0 1-1 0v-60Zm11 0a.5.5 0 0 1 1 0v60a.5.5 0 0 1-1 0v-60Z","fill":"#1D4596","key":2}),React.createElement("path",{"d":"M20 103c-2-4.627-5.783-5-7-5-1.217 0-5 .373-7 5m18.5-35c0-4.627-9.5-5-11.5-5s-11.5.373-11.5 5m23-34c0-4.627-9.5-5-11.5-5s-11.5.373-11.5 5","stroke":"#306EE8","key":3}),React.createElement("rect",{"x":"21","y":"37","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":4}),React.createElement("rect",{"x":"21","y":"18","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":5}),React.createElement("rect",{"x":"21","y":"71","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":6}),React.createElement("rect",{"x":"21","y":"51","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":7}),React.createElement("rect",{"x":"4","y":"37","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":8}),React.createElement("rect",{"x":"4","y":"18","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":9}),React.createElement("rect",{"x":"4","y":"51","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":10}),React.createElement("rect",{"x":"4","y":"71","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":11})]),React.createElement("defs",{"key":1},[React.createElement("linearGradient",{"id":"e4sqbxb6za","x1":"13","y1":"0","x2":"13","y2":"108","gradientUnits":"userSpaceOnUse","key":0},[React.createElement("stop",{"stopColor":"#0B1426","key":0}),React.createElement("stop",{"offset":"1","stopColor":"#1A4DB3","key":1})]),React.createElement("linearGradient",{"id":"1vqmv16osb","x1":"5.5","y1":"150","x2":"5.5","y2":"97","gradientUnits":"userSpaceOnUse","key":1},[React.createElement("stop",{"offset":".115","stopColor":"#fff","stopOpacity":"0","key":0}),React.createElement("stop",{"offset":".531","stopColor":"#999","stopOpacity":".448","key":1}),React.createElement("stop",{"offset":"1","stopColor":"#fff","stopOpacity":".4","key":2})]),React.createElement("linearGradient",{"id":"ubdt96w3ec","x1":"20.5","y1":"150","x2":"20.5","y2":"97","gradientUnits":"userSpaceOnUse","key":2},[React.createElement("stop",{"offset":".115","stopColor":"#fff","stopOpacity":"0","key":0}),React.createElement("stop",{"offset":".531","stopColor":"#999","stopOpacity":".448","key":1}),React.createElement("stop",{"offset":"1","stopColor":"#fff","stopOpacity":".4","key":2})])])]);
+    return React.createElement("svg",props,[React.createElement("g",{"transform":"translate(0, 25) rotate(-90)","key":0},[React.createElement("path",{"d":"M13 .5c3.072 0 5.94 2.183 8.073 5.297C23.197 8.9 24.5 12.803 24.5 16v75c0 3.22-1.099 7.38-3.116 10.727-2.022 3.355-4.889 5.773-8.384 5.773-3.05 0-5.919-2.404-8.063-5.783C2.807 98.36 1.5 94.202 1.5 91V16c0-3.197 1.303-7.1 3.427-10.203C7.06 2.683 9.928.5 13 .5Z","fill":"url(#e4sqbxb6za)","stroke":"#306EE8","key":0}),React.createElement("path",{"d":"M21 85.273V84s-2.214 2.727-8 2.727S5 84 5 84v1.273S7.857 90 13 90s8-4.727 8-4.727Z","fill":"#BACFF7","key":1}),React.createElement("path",{"d":"M7 16.5a.5.5 0 0 1 1 0v60a.5.5 0 0 1-1 0v-60Zm11 0a.5.5 0 0 1 1 0v60a.5.5 0 0 1-1 0v-60Z","fill":"#1D4596","key":2}),React.createElement("path",{"d":"M20 103c-2-4.627-5.783-5-7-5-1.217 0-5 .373-7 5m18.5-35c0-4.627-9.5-5-11.5-5s-11.5.373-11.5 5m23-34c0-4.627-9.5-5-11.5-5s-11.5.373-11.5 5","stroke":"#306EE8","key":3}),React.createElement("rect",{"x":"21","y":"37","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":4}),React.createElement("rect",{"x":"21","y":"18","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":5}),React.createElement("rect",{"x":"21","y":"71","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":6}),React.createElement("rect",{"x":"21","y":"51","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":7}),React.createElement("rect",{"x":"4","y":"37","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":8}),React.createElement("rect",{"x":"4","y":"18","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":9}),React.createElement("rect",{"x":"4","y":"51","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":10}),React.createElement("rect",{"x":"4","y":"71","width":"1","height":"8","rx":".5","fill":"#8CAEF2","key":11}),React.createElement("path",{"opacity":".5","d":"M11 139.4C11 125.35 8.937 97 5.5 97 2.462 97 0 125.35 0 139.4c0 6.36 2.462 10.6 5.5 10.6s5.5-5.03 5.5-10.6Z","fill":"url(#1vqmv16osb)","key":12}),React.createElement("path",{"opacity":".5","d":"M26 139.4c0-14.05-2.063-42.4-5.5-42.4-3.038 0-5.5 28.35-5.5 42.4 0 6.36 2.462 10.6 5.5 10.6s5.5-5.03 5.5-10.6Z","fill":"url(#ubdt96w3ec)","key":13})]),React.createElement("defs",{"key":1},[React.createElement("linearGradient",{"id":"e4sqbxb6za","x1":"13","y1":"0","x2":"13","y2":"108","gradientUnits":"userSpaceOnUse","key":0},[React.createElement("stop",{"stopColor":"#0B1426","key":0}),React.createElement("stop",{"offset":"1","stopColor":"#1A4DB3","key":1})]),React.createElement("linearGradient",{"id":"1vqmv16osb","x1":"5.5","y1":"150","x2":"5.5","y2":"97","gradientUnits":"userSpaceOnUse","key":1},[React.createElement("stop",{"offset":".115","stopColor":"#fff","stopOpacity":"0","key":0}),React.createElement("stop",{"offset":".531","stopColor":"#999","stopOpacity":".448","key":1}),React.createElement("stop",{"offset":"1","stopColor":"#fff","stopOpacity":".4","key":2})]),React.createElement("linearGradient",{"id":"ubdt96w3ec","x1":"20.5","y1":"150","x2":"20.5","y2":"97","gradientUnits":"userSpaceOnUse","key":2},[React.createElement("stop",{"offset":".115","stopColor":"#fff","stopOpacity":"0","key":0}),React.createElement("stop",{"offset":".531","stopColor":"#999","stopOpacity":".448","key":1}),React.createElement("stop",{"offset":"1","stopColor":"#fff","stopOpacity":".4","key":2})])])]);
 }
 
 Train1.defaultProps = {"width":"26","height":"150","viewBox":"0 0 108 24","fill":"none"};
