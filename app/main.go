@@ -104,7 +104,7 @@ func newServer() *echo.Echo {
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-		AllowMethods: []string{echo.GET, echo.POST},
+		AllowMethods: []string{"*"},
 	}))
 
 	fsys, err := fs.Sub(embeddedFiles, "frontend/out")
