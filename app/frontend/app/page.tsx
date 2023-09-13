@@ -46,7 +46,7 @@ export default function Home() {
 
   useEffect(() => {
     console.log("Connecting to WebSocket");
-    const ws = new WebSocket(`${wsProtocol}://${backendUrl}/ws`);
+    let ws = new WebSocket(`${wsProtocol}://${backendUrl}/ws`);
     // const ws = new WebSocket(`ws://localhost:${httpPort}/ws`);
 
     ws.addEventListener("open", () => {
@@ -55,12 +55,14 @@ export default function Home() {
 
     ws.addEventListener("close", () => {
       console.log("WebSocket connection closed");
+      setTimeout(
+        () => (ws = new WebSocket(`${wsProtocol}://${backendUrl}/ws`))
+      );
     });
 
     ws.addEventListener("message", (event) => {
       const trainData = JSON.parse(event.data) as TrainInfo;
 
-      console.log(trainData.track);
       setTracks((prevTracks) => {
         return [
           ...prevTracks.filter((t) => t !== trainData.track),
@@ -82,8 +84,9 @@ export default function Home() {
         return [...prevTrains, trainData];
       });
 
+      console.log(trainData.position);
+
       setTimeout(() => {
-        console.log(trainData.position);
         if (trainData.position === 100) {
           console.log("TRAIN ARRIVED");
           setTrains((prevTrains) => {
@@ -136,23 +139,11 @@ export default function Home() {
             Start Train
           </button>
           {tracks.sort().map((track) => (
-            <>
-              <Track
-                ip={track}
-                trains={trains.filter((train) => train.track === track)}
-                key={track}
-              />
-              <Track
-                ip={track}
-                trains={trains.filter((train) => train.track === track)}
-                key={track}
-              />
-              <Track
-                ip={track}
-                trains={trains.filter((train) => train.track === track)}
-                key={track}
-              />
-            </>
+            <Track
+              ip={track}
+              trains={trains.filter((train) => train.track === track)}
+              key={track}
+            />
           ))}
         </div>
       </main>

@@ -89,7 +89,8 @@ func watchReplicas(logger echo.Logger) {
 						err := websocket.Message.Receive(ws, &msg)
 						if err != nil {
 							log.Err(err).Str("ip", ip).Msg("error receiving message from backend")
-							return
+							delete(wsClients, clientIP) // Remove the broken socket from the map
+							return                      // Attempt to reconnect on the next iteration
 						}
 						var jsonMsg map[string]interface{}
 						err = json.Unmarshal([]byte(msg), &jsonMsg)
@@ -182,6 +183,7 @@ func handleWebSocket(c echo.Context) error {
 			err := websocket.Message.Send(ws, msg)
 			if err != nil {
 				c.Logger().Error(err)
+				break // or attempt to reconnect
 			}
 		}
 	}).ServeHTTP(c.Response(), c.Request())
