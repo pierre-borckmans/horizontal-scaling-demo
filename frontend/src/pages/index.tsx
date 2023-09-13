@@ -3,11 +3,13 @@ import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
+import Train1 from "../../public/train1.svg";
+import Track from "~/components/Track";
 
 const backendUrl = "localhost";
 const httpPort = 3300;
 const wsPort = 3333;
-interface TrainInfo {
+export interface TrainInfo {
   id: string;
   position: number;
   speed: number;
@@ -65,45 +67,42 @@ const Home: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Railway World Trip</title>
-        <link rel="icon" href="/international.png" />
+        <title>Railway Horizontal Scaling</title>
+        <link rel="icon" href="/train1.svg" />
       </Head>
 
       <main
         className="flex min-h-screen w-full min-w-0 flex-col items-center overflow-hidden px-2 pb-8 pt-4 lg:h-screen"
         style={{
+          backgroundColor: "rgb(19, 17, 28)",
           backgroundImage: `linear-gradient(
-            140deg,
-            hsl(240deg 46% 37%) 0%,
-            hsl(280deg 49% 38%) 36%,
-            hsl(311deg 56% 41%) 59%,
-            hsl(328deg 63% 50%) 76%,
-            hsl(342deg 87% 59%) 87%,
-            hsl(358deg 100% 67%) 94%,
-            hsl(17deg 100% 64%) 99%,
-            hsl(33deg 100% 59%) 101%,
-            hsl(46deg 100% 51%) 101%,
-            hsl(55deg 100% 50%) 100%
-        )`,
+              327.21deg, 
+              rgba(33, 0, 75, 0.24) 3.65%, 
+              rgba(60, 0, 136, 0) 40.32%
+            ), 
+            linear-gradient(
+              245.93deg, 
+              rgba(209, 21, 111, 0.16) 0%, 
+              rgba(209, 25, 80, 0) 36.63%
+            ), 
+            linear-gradient(
+              147.6deg, 
+              rgba(58, 19, 255, 0) 29.79%, 
+              rgba(98, 19, 255, 0.01) 85.72%
+            )`,
         }}
       >
-        {" "}
-        <div className="App">
+        <div className="flex h-full w-full flex-col gap-4 text-white">
           <h1>Train Status</h1>
           <button
-            className="border px-2 py-1"
-            onClick={() => mutation.mutate()}
+            className="flex w-fit border px-2 py-1"
+            onClick={() => {
+              mutation.mutate();
+            }}
           >
             Start Train
           </button>
-          <ul>
-            {trains.map((train) => (
-              <li key={train.id}>
-                ID: {train.id}, Position: {train.position}%, Speed:{" "}
-                {train.speed}
-              </li>
-            ))}
-          </ul>
+          <Track trains={trains} />
         </div>
       </main>
     </>
