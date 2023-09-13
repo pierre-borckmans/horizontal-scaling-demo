@@ -116,7 +116,7 @@ export default function Home() {
           >
             Start Train
           </button>
-          {tracks.map(track =>
+          {tracks.sort().map(track =>
             <Track trains={trains.filter(train => train.track === track)} key={track}/>
           )}
         </div>

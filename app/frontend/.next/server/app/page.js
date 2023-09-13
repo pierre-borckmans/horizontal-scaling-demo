@@ -515,7 +515,7 @@ function Home() {
                             },
                             children: "Start Train"
                         }),
-                        tracks.map((track)=>/*#__PURE__*/ jsx_runtime_.jsx(Track, {
+                        tracks.sort().map((track)=>/*#__PURE__*/ jsx_runtime_.jsx(Track, {
                                 trains: trains.filter((train)=>train.track === track)
                             }, track))
                     ]
