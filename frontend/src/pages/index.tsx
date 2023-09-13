@@ -19,6 +19,7 @@ const startTrain = async () => {
   );
   return response.data;
 };
+
 const Home: NextPage = () => {
   const [trains, setTrains] = useState<TrainInfo[]>([]);
   const queryClient = useQueryClient();

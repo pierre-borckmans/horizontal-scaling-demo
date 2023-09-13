@@ -32,6 +32,7 @@ app.post("/startTrain", (req, res) => {
     speed,
     position: 0,
   };
+  console.log("New train", newTrain.id);
   trains.push(newTrain);
   res.json(newTrain);
 });
