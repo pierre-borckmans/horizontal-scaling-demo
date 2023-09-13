@@ -21,6 +21,17 @@ export default function Track({ trains, ip, index }: Props) {
           rgb(255 255 255/0) 100%)`,
         }}
       >
+        <div
+          className="absolute right-[8%] flex h-full w-[84%]"
+          style={{
+            background: `linear-gradient(
+              to right,
+              #305973 5px,
+              #0000 0px
+              )`,
+            backgroundSize: "3% 100%",
+          }}
+        ></div>
         {trains.map((train) => (
           <div
             key={train.id}
