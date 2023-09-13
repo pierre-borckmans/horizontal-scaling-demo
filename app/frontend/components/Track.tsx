@@ -31,9 +31,11 @@ export default function Track({ trains, ip }: Props) {
             }}
           >
             <Train1
+              className="transition-all duration-[2000ms]"
               style={{
                 width: "8%",
                 height: 25,
+                opacity: train.position === 100 ? 0 : 100,
               }}
             />
           </div>

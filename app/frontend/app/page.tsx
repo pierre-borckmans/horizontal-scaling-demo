@@ -126,7 +126,7 @@ export default function Home() {
             )`,
         }}
       >
-        <div className="flex h-full w-full flex-col gap-4 text-white">
+        <div className="flex w-full flex-col gap-4 text-white">
           <button
             className="flex w-fit border px-2 py-1"
             onClick={() => {
@@ -136,11 +136,23 @@ export default function Home() {
             Start Train
           </button>
           {tracks.sort().map((track) => (
-            <Track
-              ip={track}
-              trains={trains.filter((train) => train.track === track)}
-              key={track}
-            />
+            <>
+              <Track
+                ip={track}
+                trains={trains.filter((train) => train.track === track)}
+                key={track}
+              />
+              <Track
+                ip={track}
+                trains={trains.filter((train) => train.track === track)}
+                key={track}
+              />
+              <Track
+                ip={track}
+                trains={trains.filter((train) => train.track === track)}
+                key={track}
+              />
+            </>
           ))}
         </div>
       </main>
