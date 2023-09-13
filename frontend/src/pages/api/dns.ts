@@ -8,7 +8,7 @@ export default async function resolveDNS(
 ) {
   const host = req.query.host as string;
   try {
-    const ips = await dnsPromises.resolve(host);
+    const ips = await dnsPromises.resolve6(host);
     res.status(200).json({ host, ips });
   } catch (err) {
     res.status(500).json({ error: `Could not resolve [${host}]` });
