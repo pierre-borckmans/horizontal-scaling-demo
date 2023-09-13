@@ -27,7 +27,7 @@ var (
 var globalChan = make(chan string)
 
 var (
-	//go:embed out/*
+	//go:embed frontend/out/*
 	embeddedFiles embed.FS
 	wsClients     = make(map[string]*websocket.Conn)
 )
@@ -106,7 +106,7 @@ func newServer() *echo.Echo {
 		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
-	fsys, err := fs.Sub(embeddedFiles, "out")
+	fsys, err := fs.Sub(embeddedFiles, "frontend/out")
 	if err != nil {
 		panic(err)
 	}
