@@ -116,7 +116,7 @@ func newServer() *echo.Echo {
 
 	e.GET("/*", echo.WrapHandler(http.FileServer(hfsys)))
 
-	e.POST("/startTrain", handleStartTrain)
+	e.GET("/startTrain", handleStartTrain)
 	e.GET("/ws", handleWebSocket)
 	return e
 }
