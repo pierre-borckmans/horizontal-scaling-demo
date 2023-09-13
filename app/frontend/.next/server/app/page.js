@@ -418,6 +418,7 @@ function Home() {
     // const backendUrl = "localhost";
     const backendUrl = "backend.railway.internal";
     const [trains, setTrains] = (0,react_.useState)([]);
+    const [tracks, setTracks] = (0,react_.useState)([]);
     const queryClient = (0,QueryClientProvider/* useQueryClient */.NL)();
     console.log(process.env);
     const startTrain = async ()=>{
@@ -444,6 +445,12 @@ function Home() {
         ws.addEventListener("message", (event)=>{
             const trainData = JSON.parse(event.data);
             console.log("Received train data", trainData);
+            if (!tracks.includes(trainData.track)) {
+                setTracks((prevTracks)=>[
+                        ...prevTracks,
+                        trainData.track
+                    ]);
+            }
             setTrains((prevTrains)=>{
                 const existingTrainIndex = prevTrains.findIndex((train)=>train.id === trainData.id);
                 if (existingTrainIndex >= 0) {
@@ -509,9 +516,9 @@ function Home() {
                             },
                             children: "Start Train"
                         }),
-                        /*#__PURE__*/ jsx_runtime_.jsx(Track, {
-                            trains: trains
-                        })
+                        tracks.map((track)=>/*#__PURE__*/ jsx_runtime_.jsx(Track, {
+                                trains: trains.filter((train)=>train.track === track)
+                            }, track))
                     ]
                 })
             })
