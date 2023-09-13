@@ -16,8 +16,8 @@ export interface TrainInfo {
 }
 
 export default function Home() {
-  const backendUrl = "localhost";
-  // const backendUrl = "backend.railway.internal";
+  // const backendUrl = "localhost";
+  const backendUrl = "backend.railway.internal";
 
   const [trains, setTrains] = useState<TrainInfo[]>([]);
   const queryClient = useQueryClient();
