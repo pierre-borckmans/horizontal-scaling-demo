@@ -10,6 +10,7 @@ const httpPort = 4000;
 const backendPort = 3300;
 
 export interface TrainInfo {
+  track: string;
   id: string;
   position: number;
   speed: number;
@@ -20,6 +21,7 @@ export default function Home() {
   const backendUrl = "backend.railway.internal";
 
   const [trains, setTrains] = useState<TrainInfo[]>([]);
+  const [tracks, setTracks] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
   console.log(process.env);
@@ -53,6 +55,10 @@ export default function Home() {
       const trainData = JSON.parse(event.data) as TrainInfo;
 
       console.log("Received train data", trainData);
+      if (!tracks.includes(trainData.track)) {
+        setTracks((prevTracks) => [...prevTracks, trainData.track]);
+      }
+
       setTrains((prevTrains) => {
         const existingTrainIndex = prevTrains.findIndex(
           (train) => train.id === trainData.id
@@ -111,7 +117,9 @@ export default function Home() {
           >
             Start Train
           </button>
-          <Track trains={trains} />
+          {tracks.map(track =>
+            <Track trains={trains.filter(train => train.track === track)} key={track}/>
+          )}
         </div>
       </main>
     </>

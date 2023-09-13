@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"embed"
+	"encoding/json"
 	"fmt"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -48,7 +49,7 @@ func main() {
 
 	e := newServer()
 
-	go watchReplicas()
+	go watchReplicas(e.Logger)
 
 	// start the server
 	errg := errgroup.Group{}
@@ -64,7 +65,7 @@ func main() {
 
 }
 
-func watchReplicas() {
+func watchReplicas(logger echo.Logger) {
 	for {
 		ips, err := net.LookupHost(BackendHost)
 		if err != nil {
@@ -88,8 +89,20 @@ func watchReplicas() {
 							log.Err(err).Str("ip", ip).Msg("error receiving message from backend")
 							return
 						}
+						var jsonMsg map[string]interface{}
+						err = json.Unmarshal([]byte(msg), &jsonMsg)
+						if err != nil {
+							logger.Error(err)
+							continue
+						}
+						jsonMsg["track"] = ip
+						enrichedMsg, err := json.Marshal(jsonMsg)
+						if err != nil {
+							logger.Error(err)
+							continue
+						}
 						println(msg)
-						globalChan <- msg // Forward the message to globalChan
+						globalChan <- string(enrichedMsg)
 					}
 				}(wsClients[ip])
 			}
