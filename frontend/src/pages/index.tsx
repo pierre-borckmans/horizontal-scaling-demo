@@ -14,7 +14,7 @@ export interface TrainInfo {
 }
 
 const Home: NextPage = () => {
-  const backendUrl = process.env.BACKEND_HOST || "localhost";
+  const backendUrl = process.env.BACKEND_HOST || "backend.railway.internal";
   const [trains, setTrains] = useState<TrainInfo[]>([]);
   const queryClient = useQueryClient();
 
