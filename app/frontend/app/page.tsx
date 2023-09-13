@@ -68,6 +68,14 @@ export default function Home() {
           return updatedTrains;
         }
 
+        setTimeout(() => {
+          if (trainData.position === 100) {
+            setTrains((prevTrains) => {
+              return prevTrains.filter(train => train.id !== trainData.id);
+            });
+          }
+        }, 1000);
+
         return [...prevTrains, trainData];
       });
     });

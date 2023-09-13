@@ -15,7 +15,7 @@ server.listen(httpPort, () => {
 });
 
 let trains = [];
-const trainLength = 2; // Train length set to 2%
+const trainLength = 15; // Train length set to 2%
 const refreshInterval = 100; // Refresh rate in milliseconds
 const timeFactor = 1000 / refreshInterval; // Factor to adjust speed
 const minSpeed = 20;
@@ -23,7 +23,6 @@ const maxSpeed = 40;
 
 // HTTP endpoint to add a train
 app.post("/startTrain", (req, res) => {
-  console.log("START TRAIN")
   const id = uuidv4();
   const speed =
     (req.body && req.body.speed) ||

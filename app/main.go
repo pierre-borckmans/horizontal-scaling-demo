@@ -145,7 +145,7 @@ func handleStartTrain(c echo.Context) error {
 	log.Info().Strs("ips", ips).Msg("found ips for start train")
 
 	// select one ip at random
-	ip := ips[rand.Intn(len(ips)+1)]
+	ip := ips[rand.Intn(len(ips))]
 	c.Logger().Info(fmt.Sprintf("selected ip %s", ip))
 
 	client := &http.Client{}
