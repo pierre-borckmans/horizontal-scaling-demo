@@ -141,6 +141,7 @@ func handleStartTrain(c echo.Context) error {
 		log.Err(err).Msg("error looking up host")
 		return err
 	}
+	log.Info().Strs("ips", ips).Msg("found ips for start train")
 
 	// select one ip at random
 	ip := ips[rand.Intn(len(ips))]
