@@ -444,13 +444,13 @@ function Home() {
         });
         ws.addEventListener("message", (event)=>{
             const trainData = JSON.parse(event.data);
-            console.log("Received train data", trainData);
             if (!tracks.includes(trainData.track)) {
                 setTracks((prevTracks)=>[
                         ...prevTracks,
                         trainData.track
                     ]);
             }
+            console.log("Received train data", tracks, trainData.track);
             setTrains((prevTrains)=>{
                 const existingTrainIndex = prevTrains.findIndex((train)=>train.id === trainData.id);
                 if (existingTrainIndex >= 0) {
