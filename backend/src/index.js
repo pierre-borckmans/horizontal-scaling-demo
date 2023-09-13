@@ -23,6 +23,7 @@ const maxSpeed = 40;
 
 // HTTP endpoint to add a train
 app.post("/startTrain", (req, res) => {
+  console.log("START TRAIN")
   const id = uuidv4();
   const speed =
     (req.body && req.body.speed) ||
