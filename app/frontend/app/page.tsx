@@ -174,20 +174,12 @@ export default function Home() {
           <div>Duration: {duration ? `${duration}ms` : "waiting..."}</div>
           <div className="flex w-full flex-col gap-10">
             {tracks.sort().map((track, index) => (
-              <>
-                <Track
-                  ip={track}
-                  trains={trains.filter((train) => train.track === track)}
-                  key={track}
-                  index={index}
-                />
-                <Track
-                  ip={track}
-                  trains={trains.filter((train) => train.track === track)}
-                  key={track}
-                  index={index}
-                />
-              </>
+              <Track
+                ip={track}
+                trains={trains.filter((train) => train.track === track)}
+                key={track}
+                index={index}
+              />
             ))}
           </div>
         </div>
