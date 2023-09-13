@@ -420,7 +420,6 @@ function Home() {
     const [trains, setTrains] = (0,react_.useState)([]);
     const [tracks, setTracks] = (0,react_.useState)([]);
     const queryClient = (0,QueryClientProvider/* useQueryClient */.NL)();
-    console.log(process.env);
     const startTrain = async ()=>{
         const response = await axios/* default */.Z.post(`https://horizontal-scaling.up.railway.app/startTrain`);
         return response.data;
@@ -445,6 +444,7 @@ function Home() {
         ws.addEventListener("message", (event)=>{
             const trainData = JSON.parse(event.data);
             if (!tracks.includes(trainData.track)) {
+                console.log("Adding track", trainData.track);
                 setTracks((prevTracks)=>[
                         ...prevTracks,
                         trainData.track

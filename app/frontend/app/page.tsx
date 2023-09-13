@@ -24,7 +24,6 @@ export default function Home() {
   const [tracks, setTracks] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
-  console.log(process.env);
   const startTrain = async () => {
     const response = await axios.post(
       `https://horizontal-scaling.up.railway.app/startTrain`
@@ -55,6 +54,7 @@ export default function Home() {
       const trainData = JSON.parse(event.data) as TrainInfo;
 
       if (!tracks.includes(trainData.track)) {
+        console.log("Adding track", trainData.track)
         setTracks((prevTracks) => [...prevTracks, trainData.track]);
       }
       console.log("Received train data", tracks, trainData.track);
