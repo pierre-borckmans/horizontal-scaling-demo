@@ -16,7 +16,7 @@ server.listen(httpPort, () => {
 
 let trains = [];
 const trainLength = 2; // Train length set to 2%
-const refreshInterval = 5; // Refresh rate in milliseconds
+const refreshInterval = 100; // Refresh rate in milliseconds
 const timeFactor = 1000 / refreshInterval; // Factor to adjust speed
 const minSpeed = 20;
 const maxSpeed = 40;

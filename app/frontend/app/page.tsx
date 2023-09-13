@@ -56,7 +56,6 @@ export default function Home() {
       setTracks((prevTracks) => {
         return [...prevTracks.filter(t => t!==trainData.track), trainData.track]
       });
-      console.log("Received train data", tracks, trainData.track);
 
       setTrains((prevTrains) => {
         const existingTrainIndex = prevTrains.findIndex(

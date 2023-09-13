@@ -449,7 +449,6 @@ function Home() {
                     trainData.track
                 ];
             });
-            console.log("Received train data", tracks, trainData.track);
             setTrains((prevTrains)=>{
                 const existingTrainIndex = prevTrains.findIndex((train)=>train.id === trainData.id);
                 if (existingTrainIndex >= 0) {
