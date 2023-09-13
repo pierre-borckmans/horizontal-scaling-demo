@@ -3,10 +3,9 @@ import Head from "next/head";
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import Train1 from "../../public/train1.svg";
 import Track from "~/components/Track";
 
-const backendUrl = "localhost";
+const backendUrl = process.env.BACKEND_HOST || "localhost";
 const httpPort = 3300;
 const wsPort = 3333;
 export interface TrainInfo {
