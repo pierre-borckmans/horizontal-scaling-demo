@@ -56,7 +56,7 @@ export default function Track({ trains, ip, index }: Props) {
                 color: train.braking
                   ? "red"
                   : train.position === 100
-                  ? "lime"
+                  ? "lightblue"
                   : "white",
               }}
             />
