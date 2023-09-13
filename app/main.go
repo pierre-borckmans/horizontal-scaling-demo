@@ -13,6 +13,7 @@ import (
 	"golang.org/x/net/websocket"
 	"golang.org/x/sync/errgroup"
 	"io/fs"
+	"math/rand"
 	"net"
 	"net/http"
 	"os"
@@ -135,8 +136,17 @@ func newServer() *echo.Echo {
 }
 
 func handleStartTrain(c echo.Context) error {
+	ips, err := net.LookupHost(BackendHost)
+	if err != nil {
+		log.Err(err).Msg("error looking up host")
+		return err
+	}
+
+	// select one ip at random
+	ip := ips[rand.Intn(len(ips))]
+
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:3300/startTrain", BackendHost), nil)
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://[%s]:3300/startTrain", ip), nil)
 	if err != nil {
 		c.Logger().Error(err)
 		return err
