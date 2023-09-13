@@ -80,16 +80,14 @@ func watchReplicas(logger echo.Logger) {
 		}
 		log.Info().Strs("ips", ips).Msg("found ips")
 		for _, ip := range ips {
+			clientIP := ip
+			globalChan <- Msg{Track: clientIP}
 			if _, ok := wsClients[ip]; !ok || !wsClients[ip].IsClientConn() {
 				wsClients[ip], err = websocket.Dial(fmt.Sprintf("ws://[%s]:3333", ip), "", "http://localhost:4000")
 				if err != nil {
 					log.Err(err).Str("ip", ip).Msg("error dialing websocket for ip")
 					continue
 				}
-				logger.Info(fmt.Sprintf("connected to %s", ip))
-				clientIP := ip
-				globalChan <- Msg{Track: clientIP}
-				logger.Info(fmt.Sprintf("sent %s", ip))
 
 				go func(ws *websocket.Conn, ip string) {
 					for {
