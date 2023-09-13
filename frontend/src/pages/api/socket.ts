@@ -1,7 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import { TrainInfo } from "~/pages";
 
-export let wss: WebSocket.Server;
+export let wss: any;
 
 const clients = {};
 const wsPort = 3333;
