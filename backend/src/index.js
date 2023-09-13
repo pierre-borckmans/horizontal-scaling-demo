@@ -11,7 +11,7 @@ app.use(cors());
 const server = http.createServer(app);
 const wss = new WebSocket.Server({ port: wsPort });
 server.listen(httpPort, () => {
-  console.log("Server started on http://localhost:6000/");
+  console.log(`Server started on http://0.0.0.0:${httpPort}/`);
 });
 
 let trains = [];
