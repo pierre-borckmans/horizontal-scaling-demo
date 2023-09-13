@@ -417,8 +417,6 @@ const backendPort = 3300;
 function Home() {
     // const backendUrl = "localhost";
     const backendUrl = "backend.railway.internal";
-    const [trains, setTrains] = (0,react_.useState)([]);
-    const [tracks, setTracks] = (0,react_.useState)([]);
     const queryClient = (0,QueryClientProvider/* useQueryClient */.NL)();
     const startTrain = async ()=>{
         const response = await axios/* default */.Z.post(`https://horizontal-scaling.up.railway.app/startTrain`);
@@ -431,6 +429,8 @@ function Home() {
             ]);
         }
     });
+    const [trains, setTrains] = (0,react_.useState)([]);
+    const [tracks, setTracks] = (0,react_.useState)([]);
     (0,react_.useEffect)(()=>{
         console.log("Connecting to WebSocket");
         const ws = new WebSocket(`wss://horizontal-scaling.up.railway.app/ws`);
@@ -443,13 +443,12 @@ function Home() {
         });
         ws.addEventListener("message", (event)=>{
             const trainData = JSON.parse(event.data);
-            if (!tracks.includes(trainData.track)) {
-                console.log("Adding track", trainData.track);
-                setTracks((prevTracks)=>[
-                        ...prevTracks,
-                        trainData.track
-                    ]);
-            }
+            setTracks((prevTracks)=>{
+                return [
+                    ...prevTracks.filter((t)=>t !== trainData.track),
+                    trainData.track
+                ];
+            });
             console.log("Received train data", tracks, trainData.track);
             setTrains((prevTrains)=>{
                 const existingTrainIndex = prevTrains.findIndex((train)=>train.id === trainData.id);

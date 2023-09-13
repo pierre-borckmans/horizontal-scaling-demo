@@ -20,8 +20,6 @@ export default function Home() {
   // const backendUrl = "localhost";
   const backendUrl = "backend.railway.internal";
 
-  const [trains, setTrains] = useState<TrainInfo[]>([]);
-  const [tracks, setTracks] = useState<string[]>([]);
   const queryClient = useQueryClient();
 
   const startTrain = async () => {
@@ -37,6 +35,8 @@ export default function Home() {
     },
   });
 
+  const [trains, setTrains] = useState<TrainInfo[]>([]);
+  const [tracks, setTracks] = useState<string[]>([]);
   useEffect(() => {
     console.log("Connecting to WebSocket");
     const ws = new WebSocket(`wss://horizontal-scaling.up.railway.app/ws`);
@@ -53,10 +53,9 @@ export default function Home() {
     ws.addEventListener("message", (event) => {
       const trainData = JSON.parse(event.data) as TrainInfo;
 
-      if (!tracks.includes(trainData.track)) {
-        console.log("Adding track", trainData.track)
-        setTracks((prevTracks) => [...prevTracks, trainData.track]);
-      }
+      setTracks((prevTracks) => {
+        return [...prevTracks.filter(t => t!==trainData.track), trainData.track]
+      });
       console.log("Received train data", tracks, trainData.track);
 
       setTrains((prevTrains) => {
