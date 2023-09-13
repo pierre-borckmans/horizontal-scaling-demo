@@ -33,7 +33,7 @@ const Home: NextPage = () => {
   });
 
   useEffect(() => {
-    const ws = new WebSocket(`wss://${backendUrl}:${wsPort}`);
+    const ws = new WebSocket(`ws://${backendUrl}:${wsPort}`);
 
     ws.addEventListener("open", () => {
       console.log("WebSocket connection opened");
