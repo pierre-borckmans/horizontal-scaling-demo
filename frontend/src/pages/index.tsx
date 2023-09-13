@@ -5,7 +5,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Track from "~/components/Track";
 
-const backendUrl = process.env.BACKEND_HOST || "localhost";
 const httpPort = 3300;
 const wsPort = 3333;
 export interface TrainInfo {
@@ -13,16 +12,19 @@ export interface TrainInfo {
   position: number;
   speed: number;
 }
-const startTrain = async () => {
-  const response = await axios.post(
-    `http://${backendUrl}:${httpPort}/startTrain`
-  );
-  return response.data;
-};
 
 const Home: NextPage = () => {
+  const backendUrl = process.env.BACKEND_HOST || "localhost";
   const [trains, setTrains] = useState<TrainInfo[]>([]);
   const queryClient = useQueryClient();
+
+  console.log(backendUrl);
+  const startTrain = async () => {
+    const response = await axios.post(
+      `http://${backendUrl}:${httpPort}/startTrain`
+    );
+    return response.data;
+  };
 
   const mutation = useMutation(startTrain, {
     onSuccess: () => {
