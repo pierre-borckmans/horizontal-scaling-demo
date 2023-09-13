@@ -390,7 +390,7 @@ function Track({ trains }) {
           rgb(255 255 255/0) 100%)`
         },
         children: trains.map((train)=>/*#__PURE__*/ jsx_runtime_.jsx("div", {
-                className: "absolute flex",
+                className: "absolute flex transition-all",
                 style: {
                     top: 0,
                     left: `${train.position}%`

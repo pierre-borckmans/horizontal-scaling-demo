@@ -19,7 +19,7 @@ export default function Track({ trains }: Props) {
     >
       {trains.map((train) => (
         <div
-          className="absolute flex"
+          className="absolute flex transition-all"
           style={{
             top: 0,
             left: `${train.position}%`,
