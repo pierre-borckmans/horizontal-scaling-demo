@@ -144,6 +144,7 @@ func handleStartTrain(c echo.Context) error {
 
 	// select one ip at random
 	ip := ips[rand.Intn(len(ips))]
+	c.Logger().Info(fmt.Sprintf("selected ip %s", ip))
 
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", fmt.Sprintf("http://[%s]:3300/startTrain", ip), nil)
