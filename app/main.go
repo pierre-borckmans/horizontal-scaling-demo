@@ -123,7 +123,7 @@ func newServer() *echo.Echo {
 
 func handleStartTrain(c echo.Context) error {
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:3333/startTrain", BackendHost), nil)
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://%s:3300/startTrain", BackendHost), nil)
 	if err != nil {
 		c.Logger().Error(err)
 		return err
