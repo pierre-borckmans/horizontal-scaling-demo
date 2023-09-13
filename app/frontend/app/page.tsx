@@ -9,13 +9,18 @@ import Track from "../components/Track";
 const httpPort = 4000;
 const backendPort = 3300;
 
-export interface TrainInfo {
-  track: string;
+export type Msg = {
+  track?: string;
+  train?: TrainInfo;
+};
+
+export type TrainInfo = {
   id: string;
   position: number;
   speed: number;
   braking: boolean;
-}
+  track: string;
+};
 
 export default function Home() {
   // const backendUrl = "localhost";
@@ -71,14 +76,20 @@ export default function Home() {
     });
 
     ws.addEventListener("message", (event) => {
-      const trainData = JSON.parse(event.data) as TrainInfo;
+      const msg = JSON.parse(event.data) as Msg;
 
-      setTracks((prevTracks) => {
-        return [
-          ...prevTracks.filter((t) => t !== trainData.track),
-          trainData.track,
-        ];
-      });
+      if (msg.track) {
+        setTracks((prevTracks) => {
+          return [...prevTracks.filter((t) => t !== msg.track!), msg.track!];
+        });
+      }
+
+      if (!msg.train) {
+        return;
+      }
+
+      const trainData = msg.train as TrainInfo;
+      trainData.track = msg.track!;
 
       setTrains((prevTrains) => {
         const existingTrainIndex = prevTrains.findIndex(
@@ -93,8 +104,6 @@ export default function Home() {
 
         return [...prevTrains, trainData];
       });
-
-      console.log(trainData.position);
 
       setTimeout(() => {
         if (trainData.position === 100) {

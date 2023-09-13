@@ -26,7 +26,12 @@ var (
 	BackendHost = os.Getenv("BACKEND_HOST")
 )
 
-var globalChan = make(chan string)
+type Msg struct {
+	Track string                 `json:"track"`
+	Train map[string]interface{} `json:"train"`
+}
+
+var globalChan = make(chan Msg, 100)
 
 var (
 	//go:embed frontend/out/*
@@ -81,8 +86,11 @@ func watchReplicas(logger echo.Logger) {
 					log.Err(err).Str("ip", ip).Msg("error dialing websocket for ip")
 					continue
 				}
+				logger.Info(fmt.Sprintf("connected to %s", ip))
+				clientIP := ip
+				globalChan <- Msg{Track: clientIP}
+				logger.Info(fmt.Sprintf("sent %s", ip))
 
-				var clientIP = ip
 				go func(ws *websocket.Conn, ip string) {
 					for {
 						msg := ""
@@ -92,20 +100,13 @@ func watchReplicas(logger echo.Logger) {
 							delete(wsClients, clientIP) // Remove the broken socket from the map
 							return                      // Attempt to reconnect on the next iteration
 						}
-						var jsonMsg map[string]interface{}
-						err = json.Unmarshal([]byte(msg), &jsonMsg)
+						var trainMsg map[string]interface{}
+						err = json.Unmarshal([]byte(msg), &trainMsg)
 						if err != nil {
 							logger.Error(err)
 							continue
 						}
-						jsonMsg["track"] = ip
-						enrichedMsg, err := json.Marshal(jsonMsg)
-						if err != nil {
-							logger.Error(err)
-							continue
-						}
-						println(msg)
-						globalChan <- string(enrichedMsg)
+						globalChan <- Msg{Track: ip, Train: trainMsg}
 					}
 				}(wsClients[ip], clientIP)
 			}
@@ -180,9 +181,16 @@ func handleWebSocket(c echo.Context) error {
 		for {
 			// Read from the global channel and forward to the client WebSocket
 			msg := <-globalChan
-			err := websocket.Message.Send(ws, msg)
+			b, err := json.Marshal(msg)
 			if err != nil {
 				c.Logger().Error(err)
+				c.Logger().Info("Error marshalling message")
+				break
+			}
+			err = websocket.Message.Send(ws, string(b))
+			if err != nil {
+				c.Logger().Error(err)
+				c.Logger().Info("Error sending message")
 				break // or attempt to reconnect
 			}
 		}
