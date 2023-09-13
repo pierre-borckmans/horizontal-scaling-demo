@@ -1,28 +1,31 @@
-import { type NextPage } from "next";
-import Head from "next/head";
+"use client";
+
 import React, { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import Track from "~/components/Track";
+import Head from "next/head";
+import Track from "../components/Track";
 
-const httpPort = 3300;
-const wsPort = 3333;
+const httpPort = 4000;
+const backendPort = 3300;
+
 export interface TrainInfo {
   id: string;
   position: number;
   speed: number;
 }
 
-const Home: NextPage = () => {
-  const backendUrl = "backend.railway.internal";
-  // const backendUrl = "localhost" || "backend.railway.internal";
+export default function Home() {
+  const backendUrl = "localhost";
+  // const backendUrl = "backend.railway.internal";
+
   const [trains, setTrains] = useState<TrainInfo[]>([]);
   const queryClient = useQueryClient();
 
   console.log(process.env);
   const startTrain = async () => {
     const response = await axios.post(
-      `http://${backendUrl}:${httpPort}/startTrain`
+      `http://${backendUrl}:${backendPort}/startTrain`
     );
     return response.data;
   };
@@ -34,7 +37,8 @@ const Home: NextPage = () => {
   });
 
   useEffect(() => {
-    const ws = new WebSocket(`ws://${backendUrl}:${wsPort}`);
+    console.log("Connecting to WebSocket");
+    const ws = new WebSocket(`ws://localhost:${httpPort}/ws`);
 
     ws.addEventListener("open", () => {
       console.log("WebSocket connection opened");
@@ -47,6 +51,7 @@ const Home: NextPage = () => {
     ws.addEventListener("message", (event) => {
       const trainData = JSON.parse(event.data) as TrainInfo;
 
+      console.log("Received train data", trainData);
       setTrains((prevTrains) => {
         const existingTrainIndex = prevTrains.findIndex(
           (train) => train.id === trainData.id
@@ -96,7 +101,7 @@ const Home: NextPage = () => {
         }}
       >
         <div className="flex h-full w-full flex-col gap-4 text-white">
-          <h1>Train Status</h1>
+          <h1>Train Status yo</h1>
           <button
             className="flex w-fit border px-2 py-1"
             onClick={() => {
@@ -110,6 +115,4 @@ const Home: NextPage = () => {
       </main>
     </>
   );
-};
-
-export default Home;
+}

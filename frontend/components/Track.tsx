@@ -1,6 +1,6 @@
-import { TrainInfo } from "~/pages";
-import Train1 from "../../public/train1.svg";
+import Train1 from "../public/train1.svg";
 import React from "react";
+import { TrainInfo } from "@/app/page";
 
 type Props = {
   trains: TrainInfo[];

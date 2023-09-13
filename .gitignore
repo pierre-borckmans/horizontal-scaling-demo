@@ -1,2 +1,5 @@
 */node_modules/
 */.next
+/.idea/jsLibraryMappings.xml
+/.idea/horizontal-scaling-demo.iml
+/.DS_Store
