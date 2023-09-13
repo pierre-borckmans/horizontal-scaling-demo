@@ -23,11 +23,15 @@ export default function Home() {
       ? "localhost"
       : "horizontal-scaling.up.railway.app";
   const wsProtocol = process.env.NODE_ENV === "development" ? "ws" : "wss";
+  const httpProtocol =
+    process.env.NODE_ENV === "development" ? "http" : "https";
 
   const queryClient = useQueryClient();
 
   const startTrain = async () => {
-    const response = await axios.post(`http://${backendUrl}/startTrain`);
+    const response = await axios.post(
+      `${httpProtocol}://${backendUrl}/startTrain`
+    );
     return response.data;
   };
 
