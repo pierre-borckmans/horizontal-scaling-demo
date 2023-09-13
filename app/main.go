@@ -82,8 +82,8 @@ func watchReplicas(logger echo.Logger) {
 					continue
 				}
 
-				go func(ws *websocket.Conn) {
-					var clientIP = ip
+				var clientIP = ip
+				go func(ws *websocket.Conn, ip string) {
 					for {
 						msg := ""
 						err := websocket.Message.Receive(ws, &msg)
@@ -98,7 +98,7 @@ func watchReplicas(logger echo.Logger) {
 							logger.Error(err)
 							continue
 						}
-						jsonMsg["track"] = clientIP
+						jsonMsg["track"] = ip
 						enrichedMsg, err := json.Marshal(jsonMsg)
 						if err != nil {
 							logger.Error(err)
@@ -107,7 +107,7 @@ func watchReplicas(logger echo.Logger) {
 						println(msg)
 						globalChan <- string(enrichedMsg)
 					}
-				}(wsClients[ip])
+				}(wsClients[ip], clientIP)
 			}
 		}
 		time.Sleep(5 * time.Second)
