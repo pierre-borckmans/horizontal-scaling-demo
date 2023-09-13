@@ -3,7 +3,7 @@ import { TrainInfo } from "~/pages";
 
 export let wss: any;
 
-const clients = {};
+const clients: Record<string, any> = {};
 const wsPort = 3333;
 
 export default async function socket(
@@ -13,6 +13,7 @@ export default async function socket(
   if (wss) {
     console.log("Websocket already exists");
   } else {
+    // @ts-ignore
     wss = new WebSocket.Server({ port: 4444 });
     console.log("Websocket created");
   }
@@ -36,7 +37,7 @@ export function updateClients(ips: string[]) {
 
       ws.addEventListener("message", (event) => {
         const trainData = JSON.parse(event.data) as TrainInfo;
-        wss.clients.forEach((client) => {
+        wss.clients.forEach((client: any) => {
           if (client.readyState === WebSocket.OPEN) {
             client.send(JSON.stringify(trainData));
           }
