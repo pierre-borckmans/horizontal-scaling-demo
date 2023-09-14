@@ -11,7 +11,7 @@ type Props = {
 
 export default function Track({ index, trains, ip, totalTracks }: Props) {
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 pt-14">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 pt-10">
       <div
         className="relative flex h-[1vw] w-full border-b-2 border-t-2 border-[#5bade0cc]"
         style={{

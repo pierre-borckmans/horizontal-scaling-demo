@@ -243,13 +243,15 @@ export default function Home() {
             </div>
             <div className="flex h-full w-full flex-col">
               {tracks.sort().map((track, index) => (
-                <Track
-                  totalTracks={tracks.length}
-                  ip={track}
-                  trains={trains.filter((train) => train.track === track)}
-                  key={track}
-                  index={index}
-                />
+                <>
+                  <Track
+                    totalTracks={tracks.length}
+                    ip={track}
+                    trains={trains.filter((train) => train.track === track)}
+                    key={track}
+                    index={index}
+                  />
+                </>
               ))}
             </div>
             <div className="flex w-fit flex-col items-center pl-10 pr-20">
