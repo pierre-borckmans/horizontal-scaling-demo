@@ -229,14 +229,14 @@ export default function Home() {
               <div className="relative ml-[-8px] mt-2 flex">
                 <Station
                   style={{
-                    height: 80,
+                    height: 100,
                     opacity: 0.7,
                   }}
-                  className="absolute left-0 top-0 scale-110 blur-[12px]"
+                  className="absolute left-0 top-0 scale-110 blur-[18px]"
                 />
                 <Station
                   style={{
-                    height: 80,
+                    height: 100,
                   }}
                 />
               </div>
@@ -258,14 +258,14 @@ export default function Home() {
               <div className="relative ml-[-8px] mt-2 flex">
                 <Station
                   style={{
-                    height: 80,
+                    height: 100,
                     opacity: 0.7,
                   }}
                   className="absolute left-0 top-0 scale-110 blur-[16px]"
                 />
                 <Station
                   style={{
-                    height: 80,
+                    height: 100,
                   }}
                 />
               </div>

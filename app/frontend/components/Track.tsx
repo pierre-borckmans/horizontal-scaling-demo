@@ -50,7 +50,7 @@ export default function Track({ index, trains, ip, totalTracks }: Props) {
                     ? "calc(0% - 400px)"
                     : train.position === 100
                     ? `calc(100% + 76px)`
-                    : `${train.position}%`,
+                    : `${train.position * 0.95}%`,
                 transformOrigin: "center left",
                 transitionDuration: `${
                   train.position < 5 || train.position === 100 ? 0.8 : 0.3
