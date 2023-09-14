@@ -153,7 +153,7 @@ export default function Home() {
             )`,
         }}
       >
-        <div className="flex w-full flex-col items-center gap-10 text-white">
+        <div className="flex w-full flex-col items-center gap-10 overflow-y-scroll text-white">
           <div className="flex items-center gap-4">
             <button
               className="flex w-fit border px-2 py-1"
