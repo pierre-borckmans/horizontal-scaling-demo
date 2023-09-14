@@ -140,7 +140,7 @@ export default function Home() {
       </Head>
 
       <main
-        className="flex min-h-screen w-full min-w-0 flex-col items-center overflow-hidden px-2 pb-8 pt-8 lg:h-screen"
+        className="flex h-fit min-h-screen w-full min-w-0 flex-col items-center overflow-hidden px-2 pb-8 pt-8"
         style={{
           backgroundColor: "rgb(19, 17, 28)",
           backgroundImage: `linear-gradient(
