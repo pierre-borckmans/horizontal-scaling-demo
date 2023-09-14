@@ -1,13 +1,25 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import cc from "classcat";
 import { useGauge } from "use-gauge";
 
 interface Props {
   value: number;
+  refreshTime: number;
 }
 
 export function Gage(props: Props) {
-  const { value } = props;
+  const { value, refreshTime } = props;
+
+  const [velocity, setVelocity] = useState(value);
+
+  useEffect(() => {
+    if (value === 0) {
+      setVelocity(0);
+      return;
+    }
+    setVelocity(Math.pow((value / 100 + velocity / 100) / 2, 1.7) * 100);
+  }, [value, refreshTime]);
+
   const gauge = useGauge({
     domain: [0, 100],
     startAngle: 90,
@@ -70,7 +82,7 @@ export function Gage(props: Props) {
           className="fill-gray-700/50 transition-all duration-[300ms] ease-linear"
           points={needle.points}
           style={{
-            transform: `rotate(${(value / 100) * 180}deg)`,
+            transform: `rotate(${(velocity / 100) * 180}deg)`,
           }}
         />
         <circle className="fill-white" {...needle.base} r={4} />

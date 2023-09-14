@@ -8,6 +8,8 @@ import Track from "../components/Track";
 import Station from "../public/station.svg";
 import Watch from "../public/watch.svg";
 import { Gage } from "@/components/Gage";
+import Title from "@/components/Title";
+import Rails from "@/public/rails.svg";
 
 export type Msg = {
   removed?: string;
@@ -158,7 +160,8 @@ export default function Home() {
             )`,
         }}
       >
-        <div className="flex h-full w-full flex-col items-center gap-4 overflow-y-scroll text-white">
+        <Title />
+        <div className="flex h-full min-h-[800px] w-full flex-col items-center gap-4 overflow-y-scroll text-white">
           <div className="flex items-center gap-4">
             <button
               className="flex w-fit rounded border border-[#3e7698] px-2 py-1 text-[#3e7698] transition-all duration-100 hover:bg-gray-700 hover:text-[#4f98c4] hover:text-white"
@@ -187,7 +190,7 @@ export default function Home() {
               Start 10 Trains
             </button>
           </div>
-          <div className="text-lg">
+          <div className="text-lg text-white/80">
             {trainsInTransit === 0 && !duration && !timerStart ? (
               <div>
                 <span className="italic text-white/70">
@@ -210,24 +213,33 @@ export default function Home() {
             )}
           </div>
 
-          <div className="flex w-32 items-center gap-1">
+          <div className="mb-[-30px] flex w-32 items-center gap-1">
             <Gage
               value={
                 trainsInTransit
                   ? 100 - (trainsBraking / trains.length) * 100
                   : 0
               }
+              refreshTime={Date.now()}
             />
           </div>
 
           <div className="flex w-full items-center text-[#3e7698]">
             <div className="flex w-fit flex-col items-center pl-10 pr-20">
-              <Station
-                style={{
-                  height: 80,
-                  opacity: 0.7,
-                }}
-              />
+              <div className="relative ml-[-8px] mt-2 flex">
+                <Station
+                  style={{
+                    height: 80,
+                    opacity: 0.7,
+                  }}
+                  className="absolute left-0 top-0 scale-110 blur-[12px]"
+                />
+                <Station
+                  style={{
+                    height: 80,
+                  }}
+                />
+              </div>
             </div>
             <div className="flex h-full w-full flex-col">
               {tracks.sort().map((track, index) => (
@@ -240,13 +252,21 @@ export default function Home() {
                 />
               ))}
             </div>
-            <div className="flex w-fit flex-col items-center pl-20 pr-10">
-              <Station
-                style={{
-                  height: 80,
-                  opacity: 0.7,
-                }}
-              />
+            <div className="flex w-fit flex-col items-center pl-10 pr-20">
+              <div className="relative ml-[-8px] mt-2 flex">
+                <Station
+                  style={{
+                    height: 80,
+                    opacity: 0.7,
+                  }}
+                  className="absolute left-0 top-0 scale-110 blur-[16px]"
+                />
+                <Station
+                  style={{
+                    height: 80,
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>
