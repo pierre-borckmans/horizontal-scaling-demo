@@ -225,7 +225,7 @@ export default function Home() {
           </div>
 
           <div className="flex w-full items-center text-[#3e7698]">
-            <div className="flex w-fit flex-col items-center pl-10 pr-20">
+            <div className="flex w-fit flex-col items-center pl-20 pr-10">
               <div className="relative ml-[-8px] mt-2 flex">
                 <Station
                   style={{
