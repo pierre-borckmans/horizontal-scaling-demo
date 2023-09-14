@@ -5,9 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import Head from "next/head";
 import Track from "../components/Track";
-
-const httpPort = 4000;
-const backendPort = 3300;
+import Station from "../public/station.svg";
 
 export type Msg = {
   removed?: string;
@@ -135,7 +133,7 @@ export default function Home() {
       </Head>
 
       <main
-        className="flex min-h-screen w-full min-w-0 flex-col items-center overflow-hidden px-2 pb-8 pt-4 lg:h-screen"
+        className="flex min-h-screen w-full min-w-0 flex-col items-center overflow-hidden px-2 pb-8 pt-8 lg:h-screen"
         style={{
           backgroundColor: "rgb(19, 17, 28)",
           backgroundImage: `linear-gradient(
@@ -155,39 +153,60 @@ export default function Home() {
             )`,
         }}
       >
-        <div className="flex w-full flex-col gap-4 text-white">
-          <button
-            className="flex w-fit border px-2 py-1"
-            onClick={() => {
-              setTimerStart(Date.now());
-              setDuration(null);
-              mutation.mutate();
-            }}
-          >
-            Start 1 Train
-          </button>
-          <button
-            className="flex w-fit border px-2 py-1"
-            onClick={() => {
-              setTimerStart(Date.now());
-              setDuration(null);
-              for (let i = 0; i < 10; i++) {
+        <div className="flex w-full flex-col items-center gap-10 text-white">
+          <div className="flex items-center gap-4">
+            <button
+              className="flex w-fit border px-2 py-1"
+              onClick={() => {
+                setTimerStart(Date.now());
+                setDuration(null);
                 mutation.mutate();
-              }
-            }}
-          >
-            Start 10 Trains
-          </button>
+              }}
+            >
+              Start 1 Train
+            </button>
+            <button
+              className="flex w-fit border px-2 py-1"
+              onClick={() => {
+                setTimerStart(Date.now());
+                setDuration(null);
+                for (let i = 0; i < 10; i++) {
+                  mutation.mutate();
+                }
+              }}
+            >
+              Start 10 Trains
+            </button>
+          </div>
           <div>Duration: {duration ? `${duration}ms` : "waiting..."}</div>
-          <div className="flex w-full flex-col gap-10">
-            {tracks.sort().map((track, index) => (
-              <Track
-                ip={track}
-                trains={trains.filter((train) => train.track === track)}
-                key={track}
-                index={index}
+          <div className="flex w-full items-center text-[#3e7698]">
+            <div className="flex w-fit flex-col items-center pl-10 pr-20">
+              <Station
+                style={{
+                  width: 80,
+                }}
               />
-            ))}
+            </div>
+            <div className="flex h-full w-full flex-col">
+              {tracks.sort().map((track) => (
+                <>
+                  <Track
+                    totalTracks={tracks.length}
+                    ip={track}
+                    trains={trains.filter((train) => train.track === track)}
+                    key={track}
+                    index={0}
+                  />{" "}
+                </>
+              ))}
+            </div>
+            <div className="flex w-fit flex-col items-center pl-20 pr-10">
+              <Station
+                style={{
+                  width: 80,
+                }}
+              />
+            </div>
           </div>
         </div>
       </main>
