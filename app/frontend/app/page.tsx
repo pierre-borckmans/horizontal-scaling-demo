@@ -224,7 +224,8 @@ export default function Home() {
             <div className="flex w-fit flex-col items-center pl-10 pr-20">
               <Station
                 style={{
-                  width: 80,
+                  height: 80,
+                  opacity: 0.7,
                 }}
               />
             </div>
@@ -242,7 +243,8 @@ export default function Home() {
             <div className="flex w-fit flex-col items-center pl-20 pr-10">
               <Station
                 style={{
-                  width: 80,
+                  height: 80,
+                  opacity: 0.7,
                 }}
               />
             </div>

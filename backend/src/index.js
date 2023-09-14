@@ -18,7 +18,7 @@ let trains = [];
 const trainLength = 12; // in % of the track
 const refreshInterval = 50; // Refresh rate in milliseconds
 const timeFactor = 1000 / refreshInterval; // Factor to adjust speed
-const minSpeed = 35;
+const minSpeed = 15;
 const maxSpeed = 60;
 
 // HTTP endpoint to add a train
