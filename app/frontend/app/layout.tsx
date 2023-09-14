@@ -6,7 +6,7 @@ import "../styles/globals.css";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Railway Regions Demo",
+  title: "Horizontal Scaling Demo",
   description: "International train journeys to your doorstep",
 };
 

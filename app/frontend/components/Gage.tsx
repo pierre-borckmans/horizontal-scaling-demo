@@ -17,7 +17,7 @@ export function Gage(props: Props) {
       setVelocity(0);
       return;
     }
-    setVelocity(Math.pow((value / 100 + velocity / 100) / 2, 1.7) * 100);
+    setVelocity(Math.pow((value / 100 + velocity / 100) / 2, 1.3) * 100);
   }, [value, refreshTime]);
 
   const gauge = useGauge({
@@ -46,7 +46,7 @@ export function Gage(props: Props) {
           const showText = asValue % 20 === 0;
 
           return (
-            <React.Fragment key={`tick-group-${angle}`}>
+            <React.Fragment>
               <line
                 className={cc([
                   "stroke-gray-300",
@@ -79,7 +79,7 @@ export function Gage(props: Props) {
         <circle className="fill-gray-700" {...needle.base} />
         <circle className="fill-gray-700" {...needle.tip} />
         <polyline
-          className="fill-gray-700/50 transition-all duration-[300ms] ease-linear"
+          className="fill-gray-700/80 transition-all duration-[300ms] ease-linear"
           points={needle.points}
           style={{
             transform: `rotate(${(velocity / 100) * 180}deg)`,

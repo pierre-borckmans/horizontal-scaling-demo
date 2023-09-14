@@ -1,6 +1,6 @@
 import Train1 from "../public/train1.svg";
 import React from "react";
-import { TrainInfo } from "@/app/page";
+import { TrainInfo } from "@/types/types";
 
 type Props = {
   ip: string;
@@ -8,6 +8,8 @@ type Props = {
   totalTracks: number;
   index: number;
 };
+
+const START_THRESHOLD = 3;
 
 export default function Track({ index, trains, ip, totalTracks }: Props) {
   return (
@@ -42,22 +44,28 @@ export default function Track({ index, trains, ip, totalTracks }: Props) {
               className="absolute h-full w-full items-center justify-center transition-all"
               style={{
                 top:
-                  train.position === 100 || train.position < 8
+                  train.position === 100 || train.position < START_THRESHOLD
                     ? distToCenterY
                     : "calc(50% - 12.5px)",
                 left:
-                  train.position < 5
+                  train.position < START_THRESHOLD
                     ? "calc(0% - 400px)"
                     : train.position === 100
                     ? `calc(100% + 76px)`
-                    : `${train.position * 0.95}%`,
+                    : `${train.position * 1.0}%`,
                 transformOrigin: "center left",
                 transitionDuration: `${
-                  train.position < 5 || train.position === 100 ? 0.8 : 0.3
+                  train.position < START_THRESHOLD || train.position === 100
+                    ? 0.8
+                    : 0.3
                 }s`,
                 opacity: train.position === 100 ? 0 : 1,
                 transitionTimingFunction:
                   train.position === 100 ? "ease-out" : "linear",
+                scale:
+                  train.position < START_THRESHOLD || train.position === 100
+                    ? 0.5
+                    : 1,
               }}
             >
               <Train1
