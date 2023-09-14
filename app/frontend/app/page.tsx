@@ -10,6 +10,7 @@ const httpPort = 4000;
 const backendPort = 3300;
 
 export type Msg = {
+  removed?: string;
   track?: string;
   train?: TrainInfo;
 };
@@ -81,6 +82,12 @@ export default function Home() {
       if (msg.track) {
         setTracks((prevTracks) => {
           return [...prevTracks.filter((t) => t !== msg.track!), msg.track!];
+        });
+      }
+
+      if (msg.removed) {
+        setTracks((prevTracks) => {
+          return [...prevTracks.filter((t) => t !== msg.removed!)];
         });
       }
 

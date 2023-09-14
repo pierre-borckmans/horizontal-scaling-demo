@@ -26,7 +26,7 @@ export default function Track({ trains, ip, index }: Props) {
           style={{
             background: `linear-gradient(
               to right,
-              #305973 5px,
+              #305973 3px,
               #0000 0px
               )`,
             backgroundSize: "3% 100%",

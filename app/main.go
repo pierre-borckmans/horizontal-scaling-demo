@@ -27,8 +27,9 @@ var (
 )
 
 type Msg struct {
-	Track string                 `json:"track"`
-	Train map[string]interface{} `json:"train"`
+	RemovedTrack string                 `json:"removed"`
+	Track        string                 `json:"track"`
+	Train        map[string]interface{} `json:"train"`
 }
 
 var globalChan = make(chan Msg, 100)
@@ -77,6 +78,19 @@ func watchReplicas(logger echo.Logger) {
 		if err != nil {
 			log.Err(err).Msg("error looking up host")
 			continue
+		}
+		for ip := range wsClients {
+			found := false
+			for _, backendIP := range ips {
+				if ip == backendIP {
+					found = true
+					break
+				}
+			}
+			if !found {
+				globalChan <- Msg{RemovedTrack: ip}
+				delete(wsClients, ip)
+			}
 		}
 		log.Info().Strs("ips", ips).Msg("found ips")
 		for _, ip := range ips {
