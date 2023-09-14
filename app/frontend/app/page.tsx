@@ -139,7 +139,7 @@ export default function Home() {
             {trainsRemaining > 0 ? (
               <>
                 <button
-                  className="flex w-fit rounded border border-[#3e7698] px-2 py-1 text-xs text-[#3e7698] transition-all duration-100 hover:bg-gray-700 hover:text-white disabled:cursor-not-allowed disabled:text-gray-500"
+                  className="flex w-fit rounded border-2 border-[#4f98c4] px-2 py-1 text-xs text-[#4f98c4] transition-all duration-100 hover:bg-gray-700 hover:text-white disabled:cursor-not-allowed disabled:text-gray-500"
                   disabled={trainsInTransit >= NUM_TRAINS}
                   onClick={() => {
                     if (!timerStart) {
@@ -156,7 +156,7 @@ export default function Home() {
                 </button>
                 <button
                   disabled={trainsInTransit >= NUM_TRAINS}
-                  className="flex w-fit rounded border border-[#3e7698] px-2 py-1 text-xs text-[#3e7698] transition-all duration-100 hover:bg-gray-700 hover:text-white disabled:cursor-not-allowed disabled:text-gray-500"
+                  className="flex w-fit rounded border-2 border-[#4f98c4] px-2 py-1 text-xs text-[#4f98c4] transition-all duration-100 hover:bg-gray-700 hover:text-white disabled:cursor-not-allowed disabled:text-gray-500"
                   onClick={() => {
                     if (!timerStart) {
                       setTimerStart(Date.now());
@@ -177,7 +177,7 @@ export default function Home() {
               </>
             ) : (
               <button
-                className="flex w-fit rounded border border-[#3e7698] px-2 py-1 text-xs text-[#3e7698] transition-all duration-100 hover:bg-gray-700 hover:text-[#4f98c4] hover:text-white"
+                className="flex w-fit rounded border-2 border-[#4f98c4] px-2 py-1 text-xs text-[#4f98c4] transition-all duration-100 hover:bg-gray-700 hover:text-[#4f98c4] hover:text-white"
                 onClick={() => {
                   setDuration(null);
                   setTrainsRemaining(NUM_TRAINS);
@@ -189,29 +189,42 @@ export default function Home() {
             )}
           </div>
 
-          <div className="mb-[-30px] flex w-32 items-center gap-1">
-            <Gage
-              value={
-                trains.length && trainsInTransit
-                  ? 100 - (trainsBraking / trains.length) * 100
-                  : 0
-              }
-              refreshTime={Date.now()}
-            />
-          </div>
-
-          <div className="flex w-full items-center px-10 text-[#3e7698]">
+          <div className="flex w-full justify-between gap-10 px-10 text-[#3e7698]">
             <Station trains={NUM_TRAINS - trainsInTransit} />
             <div className="flex h-full w-full flex-col">
-              {tracks.sort().map((track, index) => (
-                <Track
-                  totalTracks={tracks.length}
-                  ip={track}
-                  trains={trains.filter((train) => train.track === track)}
-                  key={track}
-                  index={index}
-                />
-              ))}
+              <div className="mt-9 flex h-10 w-full items-center justify-center">
+                <div className="flex w-40">
+                  <Gage
+                    value={
+                      trains.length && trainsInTransit
+                        ? 100 - (trainsBraking / trains.length) * 100
+                        : 0
+                    }
+                    refreshTime={Date.now()}
+                  />
+                </div>
+              </div>
+
+              <div className="mt-9 flex h-full w-full flex-col">
+                {[
+                  ...tracks,
+                  // ...tracks,
+                  // ...tracks,
+                  // ...tracks,
+                  // ...tracks,
+                  // ...tracks,
+                ]
+                  .sort()
+                  .map((track, index) => (
+                    <Track
+                      totalTracks={tracks.length}
+                      ip={track}
+                      trains={trains.filter((train) => train.track === track)}
+                      key={track}
+                      index={index}
+                    />
+                  ))}
+              </div>
             </div>
             <Station trains={NUM_TRAINS - trainsRemaining} />
           </div>

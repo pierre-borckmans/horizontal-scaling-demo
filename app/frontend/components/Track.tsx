@@ -13,7 +13,7 @@ const START_THRESHOLD = 3;
 
 export default function Track({ index, trains, ip, totalTracks }: Props) {
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 pt-10">
+    <div className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 pt-7">
       <div
         className="relative flex h-[1vw] w-full border-b-2 border-t-2 border-[#5bade0cc]"
         style={{
@@ -37,19 +37,21 @@ export default function Track({ index, trains, ip, totalTracks }: Props) {
           }}
         ></div>
         {trains.map((train) => {
-          const distToCenterY = ((totalTracks + 1) / 2 - index!) * 80;
+          const distToCenterY = -4 - index * 92;
           return (
             <div
               key={train.id}
               className="absolute h-full w-full items-center justify-center transition-all"
               style={{
                 top:
-                  train.position === 100 || train.position < START_THRESHOLD
+                  train.position === 100
                     ? distToCenterY
+                    : train.position < START_THRESHOLD
+                    ? -index * 80
                     : "calc(50% - 12.5px)",
                 left:
                   train.position < START_THRESHOLD
-                    ? "calc(0% - 400px)"
+                    ? "calc(0% - 120px)"
                     : train.position === 100
                     ? `calc(100% + 76px)`
                     : `${train.position * 1.0}%`,
@@ -59,7 +61,10 @@ export default function Track({ index, trains, ip, totalTracks }: Props) {
                     ? 0.8
                     : 0.3
                 }s`,
-                opacity: train.position === 100 ? 0 : 1,
+                opacity:
+                  train.position < START_THRESHOLD || train.position === 100
+                    ? 0
+                    : 1,
                 transitionTimingFunction:
                   train.position === 100 ? "ease-out" : "linear",
                 scale:
@@ -72,7 +77,7 @@ export default function Track({ index, trains, ip, totalTracks }: Props) {
                 className="transition-all"
                 style={{
                   width: "12%",
-                  height: 25,
+                  height: "25",
                   color: train.braking
                     ? "red"
                     : train.position === 100
