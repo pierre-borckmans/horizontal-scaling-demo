@@ -6,6 +6,8 @@ import axios from "axios";
 import Head from "next/head";
 import Track from "../components/Track";
 import Station from "../public/station.svg";
+import Watch from "../public/watch.svg";
+import { Gage } from "@/components/Gage";
 
 export type Msg = {
   removed?: string;
@@ -125,6 +127,9 @@ export default function Home() {
     };
   }, []);
 
+  const trainsInTransit = trains.filter((t) => t.position < 100).length;
+  const trainsBraking = trains.filter((t) => t.braking).length;
+
   return (
     <>
       <Head>
@@ -153,12 +158,14 @@ export default function Home() {
             )`,
         }}
       >
-        <div className="flex w-full flex-col items-center gap-10 overflow-y-scroll text-white">
+        <div className="flex h-full w-full flex-col items-center gap-4 overflow-y-scroll text-white">
           <div className="flex items-center gap-4">
             <button
-              className="flex w-fit border px-2 py-1"
+              className="flex w-fit rounded border border-[#3e7698] px-2 py-1 text-[#3e7698] transition-all duration-100 hover:bg-gray-700 hover:text-[#4f98c4] hover:text-white"
               onClick={() => {
-                setTimerStart(Date.now());
+                if (trains.filter((t) => t.position < 100).length === 0) {
+                  setTimerStart(Date.now());
+                }
                 setDuration(null);
                 mutation.mutate();
               }}
@@ -166,9 +173,11 @@ export default function Home() {
               Start 1 Train
             </button>
             <button
-              className="flex w-fit border px-2 py-1"
+              className="flex w-fit rounded border border-[#3e7698] px-2 py-1 text-[#3e7698] transition-all duration-100 hover:bg-gray-700 hover:text-[#4f98c4] hover:text-white"
               onClick={() => {
-                setTimerStart(Date.now());
+                if (trains.filter((t) => t.position < 100).length === 0) {
+                  setTimerStart(Date.now());
+                }
                 setDuration(null);
                 for (let i = 0; i < 10; i++) {
                   mutation.mutate();
@@ -178,7 +187,39 @@ export default function Home() {
               Start 10 Trains
             </button>
           </div>
-          <div>Duration: {duration ? `${duration}ms` : "waiting..."}</div>
+          <div className="text-lg">
+            {trainsInTransit === 0 && !duration && !timerStart ? (
+              <div>
+                <span className="italic text-white/70">
+                  Let's move some trains!
+                </span>
+              </div>
+            ) : duration ? (
+              <div className="flex items-center gap-1">
+                <Watch style={{ height: 20 }} />
+                <span>{`Duration: ${(duration / 1000).toFixed(
+                  3
+                )} seconds`}</span>
+              </div>
+            ) : (
+              <div>
+                <span>
+                  {`Waiting for ${trainsInTransit} trains to arrive...`}
+                </span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex w-32 items-center gap-1">
+            <Gage
+              value={
+                trainsInTransit
+                  ? 100 - (trainsBraking / trains.length) * 100
+                  : 0
+              }
+            />
+          </div>
+
           <div className="flex w-full items-center text-[#3e7698]">
             <div className="flex w-fit flex-col items-center pl-10 pr-20">
               <Station
