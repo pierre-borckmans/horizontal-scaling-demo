@@ -123,7 +123,7 @@ func watchReplicas(logger echo.Logger) {
 				}(wsClients[ip], clientIP)
 			}
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(500 * time.Millisecond)
 	}
 }
 
