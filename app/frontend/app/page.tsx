@@ -15,7 +15,7 @@ import "../styles/app.css";
 const BACKEND_URL =
   process.env.NODE_ENV === "development"
     ? "localhost"
-    : "horizontal-scaling.up.railway.app";
+    : "horizontal-scaling-demo.up.railway.app";
 const WS_PROTOCOL = process.env.NODE_ENV === "development" ? "ws" : "wss";
 const HTTP_PROTOCOL = process.env.NODE_ENV === "development" ? "http" : "https";
 
