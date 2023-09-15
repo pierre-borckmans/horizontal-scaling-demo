@@ -23,7 +23,7 @@ export default {
         },
       },
       animation: {
-        poke: "poke 350ms ease-out 650ms",
+        poke: "poke 350ms ease-out 350ms",
         shake: "shake 200ms ease-out",
       },
       screens: {
