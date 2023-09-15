@@ -12,6 +12,7 @@ import (
 	"github.com/ziflex/lecho/v3"
 	"golang.org/x/net/websocket"
 	"golang.org/x/sync/errgroup"
+	"io"
 	"io/fs"
 	"math/rand"
 	"net"
@@ -28,7 +29,7 @@ var (
 
 type Msg struct {
 	RemovedTrack string                 `json:"removed"`
-	Track        string                 `json:"track"`
+	Track        map[string]interface{} `json:"track"`
 	Train        map[string]interface{} `json:"train"`
 }
 
@@ -38,6 +39,7 @@ var (
 	//go:embed frontend/out/*
 	embeddedFiles embed.FS
 	wsClients     = make(map[string]*websocket.Conn)
+	brokenTracks  = make(map[string]bool)
 )
 
 func init() {
@@ -48,6 +50,8 @@ func init() {
 	if BackendHost == "" {
 		BackendHost = "localhost"
 	}
+	println(fmt.Sprintf("Listening on port %s", ListenPort))
+	println(fmt.Sprintf("Backend host %s", BackendHost))
 }
 
 func main() {
@@ -70,6 +74,31 @@ func main() {
 	}
 	errg.Wait()
 
+}
+
+func newServer() *echo.Echo {
+	e := echo.New()
+	e.Logger = lecho.From(log.Logger)
+	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
+		AllowOrigins: []string{"*"},
+		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
+		AllowMethods: []string{"*"},
+	}))
+
+	fsys, err := fs.Sub(embeddedFiles, "frontend/out")
+	if err != nil {
+		panic(err)
+	}
+
+	hfsys := http.FS(fsys)
+
+	e.GET("/*", echo.WrapHandler(http.FileServer(hfsys)))
+
+	e.POST("/startTrain", handleStartTrain)
+	e.POST("/breakTrack", handleBreakTrack)
+	e.POST("/repairTrack", handleRepairTrack)
+	e.GET("/ws", handleWebSocket)
+	return e
 }
 
 func watchReplicas(logger echo.Logger) {
@@ -95,7 +124,7 @@ func watchReplicas(logger echo.Logger) {
 		log.Info().Strs("ips", ips).Msg("found ips")
 		for _, ip := range ips {
 			clientIP := ip
-			globalChan <- Msg{Track: clientIP}
+			globalChan <- Msg{Track: map[string]interface{}{"ip": clientIP}}
 			if _, ok := wsClients[ip]; !ok || !wsClients[ip].IsClientConn() {
 				wsClients[ip], err = websocket.Dial(fmt.Sprintf("ws://[%s]:3333", ip), "", "http://localhost:4000")
 				if err != nil {
@@ -112,13 +141,28 @@ func watchReplicas(logger echo.Logger) {
 							delete(wsClients, clientIP) // Remove the broken socket from the map
 							return                      // Attempt to reconnect on the next iteration
 						}
-						var trainMsg map[string]interface{}
-						err = json.Unmarshal([]byte(msg), &trainMsg)
+						var msgMap map[string]interface{}
+						err = json.Unmarshal([]byte(msg), &msgMap)
 						if err != nil {
 							logger.Error(err)
 							continue
 						}
-						globalChan <- Msg{Track: ip, Train: trainMsg}
+
+						if _, ok := msgMap["train"]; ok {
+							var trainMsg = msgMap["train"].(map[string]interface{})
+							globalChan <- Msg{Train: trainMsg, Track: map[string]interface{}{"ip": clientIP}}
+						}
+
+						if _, ok := msgMap["track"]; ok {
+							var trackMsg = msgMap["track"].(map[string]interface{})
+							if _, ok := trackMsg["breakPoint"]; ok {
+								brokenTracks[clientIP] = true
+							} else {
+								brokenTracks[clientIP] = false
+							}
+							trackMsg["ip"] = clientIP
+							globalChan <- Msg{Track: trackMsg}
+						}
 					}
 				}(wsClients[ip], clientIP)
 			}
@@ -127,30 +171,9 @@ func watchReplicas(logger echo.Logger) {
 	}
 }
 
-func newServer() *echo.Echo {
-	e := echo.New()
-	e.Logger = lecho.From(log.Logger)
-	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{"*"},
-		AllowHeaders: []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
-		AllowMethods: []string{"*"},
-	}))
-
-	fsys, err := fs.Sub(embeddedFiles, "frontend/out")
-	if err != nil {
-		panic(err)
-	}
-
-	hfsys := http.FS(fsys)
-
-	e.GET("/*", echo.WrapHandler(http.FileServer(hfsys)))
-
-	e.POST("/startTrain", handleStartTrain)
-	e.GET("/ws", handleWebSocket)
-	return e
-}
-
 func handleStartTrain(c echo.Context) error {
+	speed := c.FormValue("speed")
+	id := c.FormValue("id")
 	ips, err := net.LookupHost(BackendHost)
 	if err != nil {
 		log.Err(err).Msg("error looking up host")
@@ -158,12 +181,25 @@ func handleStartTrain(c echo.Context) error {
 	}
 	log.Info().Strs("ips", ips).Msg("found ips for start train")
 
-	// select one ip at random
-	ip := ips[rand.Intn(len(ips))]
-	c.Logger().Info(fmt.Sprintf("selected ip %s", ip))
+	var selectedIP string
+	var i = 0
+	for {
+		// select one ip at random
+		selectedIP = ips[rand.Intn(len(ips))]
+		println(brokenTracks[selectedIP])
+		if !brokenTracks[selectedIP] {
+			c.Logger().Info(fmt.Sprintf("selected ip %s", selectedIP))
+			break
+		}
+		c.Logger().Info(fmt.Sprintf("track at ip %s is broken", selectedIP))
+		i++
+		if i > 10 {
+			return fmt.Errorf("no working brokenTracks found")
+		}
+	}
 
 	client := &http.Client{}
-	req, err := http.NewRequest("POST", fmt.Sprintf("http://[%s]:3300/startTrain", ip), nil)
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://[%s]:3300/startTrain?speed=%s&id=%s", selectedIP, speed, id), nil)
 	if err != nil {
 		c.Logger().Error(err)
 		return err
@@ -183,6 +219,72 @@ func handleStartTrain(c echo.Context) error {
 		c.Logger().Error(err)
 		return err
 	}
+
+	respBody, err := io.ReadAll(resp.Body)
+	c.Response().WriteHeader(http.StatusOK)
+	c.Response().Write(respBody)
+
+	return nil
+}
+
+func handleBreakTrack(c echo.Context) error {
+	ip := c.FormValue("name")
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://[%s]:3300/breakTrack", ip), nil)
+	if err != nil {
+		c.Logger().Error(err)
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		c.Logger().Error(err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("received non-OK status code: %d", resp.StatusCode)
+		c.Logger().Error(err)
+		return err
+	}
+
+	respBody, err := io.ReadAll(resp.Body)
+	c.Response().WriteHeader(http.StatusOK)
+	c.Response().Write(respBody)
+
+	return nil
+}
+
+func handleRepairTrack(c echo.Context) error {
+	ip := c.FormValue("name")
+	client := &http.Client{}
+	req, err := http.NewRequest("POST", fmt.Sprintf("http://[%s]:3300/repairTrack", ip), nil)
+	if err != nil {
+		c.Logger().Error(err)
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		c.Logger().Error(err)
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		err = fmt.Errorf("received non-OK status code: %d", resp.StatusCode)
+		c.Logger().Error(err)
+		return err
+	}
+
+	respBody, err := io.ReadAll(resp.Body)
+	c.Response().WriteHeader(http.StatusOK)
+	c.Response().Write(respBody)
 
 	return nil
 }

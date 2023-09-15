@@ -9,28 +9,31 @@ import Title from "@/components/Title";
 import Track from "@/components/Track";
 import Station from "@/components/Station";
 import Status from "@/components/Status";
-import { Msg, NUM_TRAINS, TrainInfo } from "@/types/types";
+import {
+  BACKEND_URL,
+  HTTP_PROTOCOL,
+  Msg,
+  NUM_TRAINS,
+  TrackInfo,
+  TrainInfo,
+  WS_PROTOCOL,
+} from "@/types/types";
 import "../styles/app.css";
 
-const BACKEND_URL =
-  process.env.NODE_ENV === "development"
-    ? "localhost"
-    : "horizontal-scaling-demo.up.railway.app";
-const WS_PROTOCOL = process.env.NODE_ENV === "development" ? "ws" : "wss";
-const HTTP_PROTOCOL = process.env.NODE_ENV === "development" ? "http" : "https";
-
 export default function Home() {
-  const startTrain = async () => {
+  const startTrain = async ({ speed, id }: { speed?: number; id?: string }) => {
     const response = await axios.post(
-      `${HTTP_PROTOCOL}://${BACKEND_URL}/startTrain`
+      `${HTTP_PROTOCOL}://${BACKEND_URL}/startTrain?speed=${speed || ""}&id=${
+        id || ""
+      }`
     );
     return response.data;
   };
 
-  const mutation = useMutation(startTrain);
+  const startTrainMutation = useMutation(startTrain);
 
   const [trains, setTrains] = useState<TrainInfo[]>([]);
-  const [tracks, setTracks] = useState<string[]>([]);
+  const [tracks, setTracks] = useState<Record<string, TrackInfo>>({});
   const [timerStart, setTimerStart] = useState<number | null>(null);
   const [duration, setDuration] = useState<number | null>(null);
   const [trainsRemaining, setTrainsRemaining] = useState<number>(NUM_TRAINS);
@@ -64,13 +67,25 @@ export default function Home() {
 
       if (msg.track) {
         setTracks((prevTracks) => {
-          return [...prevTracks.filter((t) => t !== msg.track!), msg.track!];
+          if (!prevTracks[msg.track!.ip!]) {
+            prevTracks[msg.track!.ip!] = {
+              ip: msg.track!.ip!,
+              breakPoint: msg.track!.breakPoint,
+            };
+            return { ...prevTracks };
+          }
+          prevTracks[msg.track!.ip!].ip = msg.track!.ip!;
+          if (msg.track!.breakPoint !== undefined) {
+            prevTracks[msg.track!.ip!].breakPoint = msg.track!.breakPoint;
+          }
+          return { ...prevTracks };
         });
       }
 
       if (msg.removed) {
         setTracks((prevTracks) => {
-          return [...prevTracks.filter((t) => t !== msg.removed!)];
+          delete prevTracks[msg.removed!];
+          return { ...prevTracks };
         });
       }
 
@@ -79,7 +94,7 @@ export default function Home() {
       }
 
       const trainData = msg.train as TrainInfo;
-      trainData.track = msg.track!;
+      trainData.track = msg.track!.ip!;
 
       setTrains((prevTrains) => {
         const existingTrainIndex = prevTrains.findIndex(
@@ -103,6 +118,16 @@ export default function Home() {
         if (trainData.position === 100) {
           setTrains((prevTrains) => {
             return prevTrains.filter((train) => train.id !== trainData.id);
+          });
+        }
+
+        if (trainData.position === 0 && trainData.rerouted) {
+          setTrains((prevTrains) => {
+            return prevTrains.filter((train) => train.id !== trainData.id);
+          });
+          startTrainMutation.mutate({
+            speed: -trainData.speed,
+            id: trainData.id,
           });
         }
       }, 500);
@@ -149,7 +174,7 @@ export default function Home() {
                       return;
                     }
                     setTrainsInTransit((old) => old + 1);
-                    mutation.mutate();
+                    startTrainMutation.mutate({});
                   }}
                 >
                   Start {Math.min(NUM_TRAINS - trainsInTransit, 1)} Train
@@ -168,7 +193,7 @@ export default function Home() {
                       i++
                     ) {
                       setTrainsInTransit((old) => old + 1);
-                      mutation.mutate();
+                      startTrainMutation.mutate({});
                     }
                   }}
                 >
@@ -207,21 +232,17 @@ export default function Home() {
               </div>
 
               <div className="mt-9 flex h-full w-full flex-col">
-                {[
-                  ...tracks,
-                  // ...tracks,
-                  // ...tracks,
-                  // ...tracks,
-                  // ...tracks,
-                  // ...tracks,
-                ]
-                  .sort()
+                {Object.values(tracks)
+                  .sort((t1, t2) => t1.ip.localeCompare(t2.ip))
                   .map((track, index) => (
                     <Track
-                      totalTracks={tracks.length}
-                      ip={track}
-                      trains={trains.filter((train) => train.track === track)}
-                      key={track}
+                      breakPoint={track.breakPoint}
+                      totalTracks={Object.keys(tracks).length}
+                      ip={track.ip}
+                      trains={trains.filter(
+                        (train) => train.track === track.ip
+                      )}
+                      key={track.ip}
                       index={index}
                     />
                   ))}

@@ -21,21 +21,33 @@ const timeFactor = 1000 / refreshInterval; // Factor to adjust speed
 const minSpeed = 15;
 const maxSpeed = 60;
 
-// HTTP endpoint to add a train
+let breakPoint = undefined;
+
 app.post("/startTrain", (req, res) => {
-  console.log("New train");
-  const id = uuidv4();
+  console.log("New train", req.query);
+  const id = (req.query && req.query.id) || uuidv4();
   const speed =
-    (req.body && req.body.speed) ||
+    (req.query && req.query.speed) ||
     Math.random() * (maxSpeed - minSpeed) + minSpeed;
   const newTrain = {
     id,
     speed,
     position: 0,
+    rerouted: !!req.query.id,
   };
   console.log("New train", newTrain.id);
   trains.push(newTrain);
   res.json(newTrain);
+});
+
+app.post("/breakTrack", (req, res) => {
+  console.log("Track is broken");
+  breakPoint = 70;
+});
+
+app.post("/repairTrack", (req, res) => {
+  console.log("Track is repaired");
+  breakPoint = null;
 });
 
 // Simulation
@@ -60,27 +72,20 @@ setInterval(() => {
       braking = true;
     } else {
       // Move the train
-      trains[i].position = Math.min(
-        100,
-        trains[i].position + currentSpeed / timeFactor,
+      trains[i].position = Math.max(
+        0,
+        Math.min(100, trains[i].position + currentSpeed / timeFactor),
       );
     }
 
-    if (trains[i].position >= 100) {
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
-              id: trains[i].id,
-              position: 100,
-              speed: 0,
-              braking: false,
-            }),
-          );
-        }
-      });
-      trains[i] = null;
-      continue;
+    if (breakPoint && trains[i].position >= breakPoint) {
+      trains[i].rerouted = true;
+      trains[i].position = breakPoint - trainLength;
+      trains[i].speed *= -1;
+      for (let j = i + 1; j < trains.length; j++) {
+        trains[j].rerouted = true;
+        trains[j].speed *= -1;
+      }
     }
 
     // Send position updates as JSON
@@ -88,13 +93,40 @@ setInterval(() => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(
           JSON.stringify({
-            id: trains[i].id,
-            position: trains[i].position,
-            speed: currentSpeed,
-            braking,
+            train: {
+              id: trains[i].id,
+              position: trains[i].position,
+              speed: currentSpeed,
+              braking,
+              rerouted: trains[i].rerouted,
+            },
           }),
         );
       }
     });
+
+    if (trains[i].position >= 100) {
+      trains[i] = null;
+      continue;
+    }
+
+    if (trains[i].position === 0 && trains[i].rerouted) {
+      trains[i] = null;
+      continue;
+    }
   }
 }, refreshInterval);
+
+setInterval(() => {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(
+        JSON.stringify({
+          track: {
+            breakPoint,
+          },
+        }),
+      );
+    }
+  });
+}, 500);
