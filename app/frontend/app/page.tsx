@@ -152,7 +152,7 @@ export default function Home() {
                     mutation.mutate();
                   }}
                 >
-                  Start 1 Train
+                  Start {Math.min(NUM_TRAINS - trainsInTransit, 1)} Train
                 </button>
                 <button
                   disabled={trainsInTransit >= NUM_TRAINS}
@@ -172,24 +172,25 @@ export default function Home() {
                     }
                   }}
                 >
-                  Start 10 Trains
+                  Start {Math.min(NUM_TRAINS - trainsInTransit, 10)} Trains
                 </button>
               </>
-            ) : (
-              <button
-                className="flex w-fit rounded border-2 border-[#4f98c4] px-2 py-1 text-xs text-[#4f98c4] transition-all duration-100 hover:bg-gray-700 hover:text-[#4f98c4] hover:text-white"
-                onClick={() => {
-                  setDuration(null);
-                  setTrainsRemaining(NUM_TRAINS);
-                  setTrainsInTransit(0);
-                }}
-              >
-                Try again!
-              </button>
-            )}
+            ) : null}
+            <button
+              className="flex w-fit rounded border-2 border-[#4f98c4] px-2 py-1 text-xs text-[#4f98c4] transition-all duration-100 hover:bg-gray-700 hover:text-white disabled:cursor-not-allowed disabled:text-gray-500"
+              disabled={trains.filter((t) => t.position < 100).length > 0}
+              onClick={() => {
+                setTimerStart(null);
+                setDuration(null);
+                setTrainsRemaining(NUM_TRAINS);
+                setTrainsInTransit(0);
+              }}
+            >
+              Try again!
+            </button>
           </div>
 
-          <div className="flex w-full justify-between gap-10 px-10 text-[#3e7698]">
+          <div className="flex w-full justify-between gap-10 px-10 text-[#519ac6]">
             <Station trains={NUM_TRAINS - trainsInTransit} />
             <div className="flex h-full w-full flex-col">
               <div className="mt-9 flex h-10 w-full items-center justify-center">
