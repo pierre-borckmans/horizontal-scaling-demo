@@ -8,7 +8,11 @@ type Props = {
 };
 export default function Station({ trains }: Props) {
   return (
-    <div className="relative flex h-[300px] w-fit flex-col items-center gap-4">
+    <div
+      className={`relative flex h-[300px] w-fit flex-col items-center gap-4
+    ${trains === NUM_TRAINS ? "animate-poke" : trains > 0 ? "" : "    "}
+    `}
+    >
       <StationIcon2
         style={{
           height: 120,

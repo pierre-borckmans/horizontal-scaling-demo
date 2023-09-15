@@ -4,7 +4,7 @@ export default {
   content: [
     "./app/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx}",
-    "./components/**/*.{js,ts,jsx,tsx}"
+    "./components/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
@@ -18,12 +18,12 @@ export default {
         },
         poke: {
           "0%": { transform: "scale(1.0) rotateZ(0deg)" },
-          "50%": { transform: "scale(1.30) rotateZ(2deg)" },
+          "50%": { transform: "scale(1.20) rotateZ(0deg)" },
           "100%": { transform: "scale(1.0) rotateZ(0deg)" },
         },
       },
       animation: {
-        poke: "poke 350ms ease-out",
+        poke: "poke 350ms ease-out 650ms",
         shake: "shake 200ms ease-out",
       },
       screens: {
