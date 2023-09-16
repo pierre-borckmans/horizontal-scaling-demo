@@ -101,7 +101,7 @@ export default function Track({
         {breakPoint && (
           <>
             <div
-              className="absolute top-[-12px] text-2xl"
+              className="absolute top-[-12px] animate-poke text-2xl"
               style={{ left: `${breakPoint}%` }}
             >
               💥

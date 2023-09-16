@@ -23,6 +23,20 @@ const maxSpeed = 60;
 
 let breakPoint = undefined;
 
+const notifyTrack = () => {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(
+        JSON.stringify({
+          track: {
+            breakPoint,
+          },
+        }),
+      );
+    }
+  });
+};
+
 app.post("/startTrain", (req, res) => {
   console.log("New train", req.query);
   const id = (req.query && req.query.id) || uuidv4();
@@ -43,11 +57,13 @@ app.post("/startTrain", (req, res) => {
 app.post("/breakTrack", (req, res) => {
   console.log("Track is broken");
   breakPoint = 70;
+  notifyTrack();
 });
 
 app.post("/repairTrack", (req, res) => {
   console.log("Track is repaired");
   breakPoint = null;
+  notifyTrack();
 });
 
 // Simulation
