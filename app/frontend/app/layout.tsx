@@ -8,6 +8,7 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Horizontal Scaling Demo",
   description: "International train journeys to your doorstep",
+  icons: ["/rails.svg"],
 };
 
 export default function RootLayout({

@@ -148,11 +148,6 @@ export default function Home() {
 
   return (
     <>
-      <Head>
-        <title>Railway Horizontal Scaling</title>
-        <link rel="icon" href="/train1.svg" />
-      </Head>
-
       <main
         className="app flex h-fit min-h-screen w-full min-w-0 flex-col items-center overflow-hidden px-2 pt-8"
         style={{}}
