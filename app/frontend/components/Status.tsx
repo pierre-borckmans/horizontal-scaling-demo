@@ -24,18 +24,20 @@ export default function Status({
   }, [timerStart]);
 
   return (
-    <div className="h-8 text-lg text-white/80">
+    <div className="h-8 text-white/80">
       {trainsRemaining === NUM_TRAINS && !duration && !timerStart ? (
         <div>
-          <span className="text-[17px] text-white/60">
+          <span className="text-[15px] text-white/60 lg:text-[17px]">
             Let's move all trains across as fast as we can...
           </span>
         </div>
       ) : duration ? (
-        <div className="flex items-center justify-center gap-1 text-emerald-500">
+        <div className="flex items-center justify-center gap-1 text-[13px] text-emerald-500 lg:text-[17px]">
           <Watch style={{ height: 20 }} />
           <span>{`All ${NUM_TRAINS} trains reached their destination in `}</span>
-          <span className="mt-1 font-mono">{(duration / 1000).toFixed(3)}</span>
+          <span className="font-mono text-[12px] lg:text-[17px]">
+            {(duration / 1000).toFixed(3)}
+          </span>
           <span> seconds!</span>
         </div>
       ) : (

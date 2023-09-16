@@ -19,6 +19,7 @@ import {
   WS_PROTOCOL,
 } from "@/types/types";
 import "../styles/app.css";
+import Train from "@/public/train.svg";
 
 export default function Home() {
   const startTrain = async ({ speed, id }: { speed?: number; id?: string }) => {
@@ -214,11 +215,11 @@ export default function Home() {
             </button>
           </div>
 
-          <div className="flex w-full justify-between gap-10 px-10 text-[#519ac6]">
+          <div className="flex w-full justify-between gap-3 px-1 text-[#519ac6] lg:gap-10 lg:px-10">
             <Station trains={NUM_TRAINS - trainsInTransit} />
             <div className="flex h-full w-full flex-col">
               <div className="mt-9 flex h-10 w-full items-center justify-center">
-                <div className="flex w-40">
+                <div className="flex w-40 pt-4 lg:pt-2">
                   <Gage
                     value={
                       trains.length && trainsInTransit

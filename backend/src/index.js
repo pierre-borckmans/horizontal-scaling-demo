@@ -77,15 +77,17 @@ setInterval(() => {
     if (
       i > 0 &&
       trains[i - 1] &&
-      trains[i - 1].position - trainLength - 1 <= trains[i].position
+      trains[i - 1].position - trains[i].position <= trainLength + 1.5
     ) {
       // Match speed and position of the train in front
       trains[i].position = Math.max(
         0,
-        trains[i - 1].position - trainLength - 1,
+        trains[i - 1].position - trainLength - 0.5,
       );
       currentSpeed = trains[i].position === 0 ? 0 : trains[i - 1].speed;
       braking = true;
+      // if (trains[i - 1].position - trains[i].position - trainLength < 15) {
+      // }
     } else {
       // Move the train
       trains[i].position = Math.max(

@@ -8,12 +8,10 @@ export default function Title() {
       </div>
 
       <h1 className="flex w-full flex-col items-center justify-center gap-0 tracking-tight text-white">
-        <span className="text-3xl font-extrabold text-[#4f98c4]">
+        <span className="text-2xl font-extrabold text-[#4f98c4] lg:text-3xl">
           Horizontal Scaling
         </span>
       </h1>
-
-      <div className="relative ml-[-8px] mt-2 flex text-white/60"></div>
     </div>
   );
 }

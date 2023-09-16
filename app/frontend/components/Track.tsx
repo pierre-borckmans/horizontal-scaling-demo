@@ -1,4 +1,4 @@
-import Train1 from "../public/train1.svg";
+import Train from "../public/train.svg";
 import React, { useState } from "react";
 import { BACKEND_URL, HTTP_PROTOCOL, TrainInfo } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
@@ -51,12 +51,12 @@ export default function Track({
 
   return (
     <div
-      className="flex h-full w-full flex-col items-center justify-center gap-2 px-4 pt-7"
+      className="flex h-full w-full select-none flex-col items-center justify-center gap-2 pt-7 lg:px-4"
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
       <div
-        className="relative flex h-[1vw] w-full border-b-2 border-t-2 border-[#5bade0cc]"
+        className="relative flex h-[14px] w-full border-b-2 border-t-2 border-[#5bade0cc]"
         style={{
           background: `linear-gradient(90deg,
           rgb(255 255 255/0) 0%,
@@ -67,7 +67,7 @@ export default function Track({
       >
         {hovered && !breakPoint && (
           <div
-            className="absolute right-0 top-[-40px] cursor-pointer text-2xl transition-all hover:scale-125"
+            className="absolute right-0 top-[-40px] cursor-pointer text-xl transition-all hover:scale-125 lg:text-2xl"
             onClick={() => {
               breakTrackMutation.mutate();
             }}
@@ -77,7 +77,7 @@ export default function Track({
         )}
         {hovered && breakPoint && (
           <div
-            className="absolute right-0 top-[-40px] cursor-pointer text-2xl transition-all hover:scale-125"
+            className="absolute right-0 top-[-40px] cursor-pointer text-xl transition-all hover:scale-125 lg:text-2xl"
             onClick={() => {
               repairTrackMutation.mutate();
             }}
@@ -128,13 +128,13 @@ export default function Track({
                     ? distToCenterY
                     : train.position < START_THRESHOLD
                     ? -index * 80
-                    : "calc(50% - 12.5px)",
+                    : "calc(50% - 12px)",
                 left:
                   train.position < START_THRESHOLD
                     ? "calc(0% - 120px)"
                     : train.position === 100
                     ? `calc(100% + 76px)`
-                    : `${train.position * 1.0}%`,
+                    : `${train.position}%`,
                 transformOrigin: "center left",
                 transitionDuration: `${
                   train.position < START_THRESHOLD || train.position === 100
@@ -153,16 +153,11 @@ export default function Track({
                     : 1,
               }}
             >
-              {train.rerouted && (
-                <span className="absolute left-[28px] top-[-7px] text-2xl">
-                  ⚠️
-                </span>
-              )}
-              <Train1
-                className="transition-all"
+              <Train
+                className="relative mt-[4px] h-[16px] transition-all lg:mt-0 lg:h-[25px]"
                 style={{
+                  preserveAspectRatio: "none",
                   width: "12%",
-                  height: "25",
                   color: train.braking
                     ? "red"
                     : train.position === 100
@@ -172,6 +167,11 @@ export default function Track({
                     : "white",
                 }}
               />
+              {train.rerouted && (
+                <span className="text:sm absolute left-[8px] top-[-12px] lg:left-[32px] lg:top-[-20px] lg:text-xl">
+                  ⤵️
+                </span>
+              )}
             </div>
           );
         })}
