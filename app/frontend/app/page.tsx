@@ -22,12 +22,17 @@ import "../styles/app.css";
 
 export default function Home() {
   const startTrain = async ({ speed, id }: { speed?: number; id?: string }) => {
-    const response = await axios.post(
-      `${HTTP_PROTOCOL}://${BACKEND_URL}/startTrain?speed=${speed || ""}&id=${
-        id || ""
-      }`
-    );
-    return response.data;
+    try {
+      const response = await axios.post(
+        `${HTTP_PROTOCOL}://${BACKEND_URL}/startTrain?speed=${speed || ""}&id=${
+          id || ""
+        }`
+      );
+      setTrainsInTransit((old) => old + 1);
+      return response.data;
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   const startTrainMutation = useMutation(startTrain);
@@ -125,6 +130,7 @@ export default function Home() {
           setTrains((prevTrains) => {
             return prevTrains.filter((train) => train.id !== trainData.id);
           });
+          setTrainsInTransit((old) => old - 1);
           startTrainMutation.mutate({
             speed: -trainData.speed,
             id: trainData.id,
@@ -173,7 +179,6 @@ export default function Home() {
                     if (NUM_TRAINS - trainsInTransit <= 0) {
                       return;
                     }
-                    setTrainsInTransit((old) => old + 1);
                     startTrainMutation.mutate({});
                   }}
                 >
@@ -192,7 +197,6 @@ export default function Home() {
                       i < Math.min(NUM_TRAINS - trainsInTransit, 10);
                       i++
                     ) {
-                      setTrainsInTransit((old) => old + 1);
                       startTrainMutation.mutate({});
                     }
                   }}

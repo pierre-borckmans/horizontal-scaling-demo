@@ -156,7 +156,11 @@ func watchReplicas(logger echo.Logger) {
 						if _, ok := msgMap["track"]; ok {
 							var trackMsg = msgMap["track"].(map[string]interface{})
 							if _, ok := trackMsg["breakPoint"]; ok {
-								brokenTracks[clientIP] = true
+								if trackMsg["breakPoint"] == nil {
+									brokenTracks[clientIP] = false
+								} else {
+									brokenTracks[clientIP] = true
+								}
 							} else {
 								brokenTracks[clientIP] = false
 							}
@@ -193,7 +197,8 @@ func handleStartTrain(c echo.Context) error {
 		}
 		c.Logger().Info(fmt.Sprintf("track at ip %s is broken", selectedIP))
 		i++
-		if i > 10 {
+		if i > 20 {
+			c.Response().WriteHeader(http.StatusInternalServerError)
 			return fmt.Errorf("no working brokenTracks found")
 		}
 	}
