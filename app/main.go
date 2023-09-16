@@ -228,7 +228,7 @@ func handleStartTrain(c echo.Context) error {
 }
 
 func handleBreakTrack(c echo.Context) error {
-	ip := c.FormValue("name")
+	ip := c.FormValue("ip")
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", fmt.Sprintf("http://[%s]:3300/breakTrack", ip), nil)
 	if err != nil {
@@ -259,7 +259,7 @@ func handleBreakTrack(c echo.Context) error {
 }
 
 func handleRepairTrack(c echo.Context) error {
-	ip := c.FormValue("name")
+	ip := c.FormValue("ip")
 	client := &http.Client{}
 	req, err := http.NewRequest("POST", fmt.Sprintf("http://[%s]:3300/repairTrack", ip), nil)
 	if err != nil {
