@@ -182,14 +182,4 @@ setInterval(() => {
   }
 }, refreshInterval);
 
-setInterval(() => {
-  if (wsClient && wsClient.readyState === WebSocket.OPEN) {
-    wsClient.send(
-      JSON.stringify({
-        track: {
-          breakPoint,
-        },
-      }),
-    );
-  }
-}, 200);
+setInterval(() => notifyTrack, 1000);
