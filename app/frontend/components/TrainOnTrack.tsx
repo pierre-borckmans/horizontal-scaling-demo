@@ -55,7 +55,7 @@ export default function TrainOnTrack({ train, trackIndex }: Props) {
         }}
       />
       {train.rerouted && (
-        <span className="text:sm absolute left-[8px] top-[-12px] lg:left-[32px] lg:top-[-20px] lg:text-xl">
+        <span className="text:sm absolute left-[8px] top-[-12px] lg:left-[50px] lg:top-[-20px] lg:text-xl">
           ⤵️
         </span>
       )}

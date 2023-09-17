@@ -34,7 +34,7 @@ let trains = [];
 const trainLength = 12; // in % of the track
 const refreshInterval = 50; // Refresh rate in milliseconds
 const timeFactor = 1000 / refreshInterval; // Factor to adjust speed
-const minSpeed = 15;
+const minSpeed = 20;
 const maxSpeed = 60;
 
 let breakPoint = undefined;
@@ -60,7 +60,7 @@ app.post("/startTrain", (req, res) => {
   const id = (req.query && req.query.id) || uuidv4();
   const speed =
     (req.query && req.query.speed) ||
-    Math.random() * (maxSpeed - minSpeed) + minSpeed;
+    Math.round((Math.random() * (maxSpeed - minSpeed)) / 10) * 10 + minSpeed;
   const newTrain = {
     id,
     speed,
@@ -88,6 +88,7 @@ app.post("/breakTrack", (req, res) => {
   console.log("Track is broken");
   breakPoint = 70;
   notifyTrack();
+  res.status(200).send("Track is broken");
 });
 
 app.post("/repairTrack", (req, res) => {
@@ -98,6 +99,7 @@ app.post("/repairTrack", (req, res) => {
   console.log("Track is repaired");
   breakPoint = null;
   notifyTrack();
+  res.status(200).send("Track is repaired");
 });
 
 // Simulation
@@ -141,7 +143,7 @@ setInterval(() => {
     if (
       breakPoint &&
       trains[i].position >= breakPoint - 0.5 &&
-      trains[i].position < breakPoint + 1
+      trains[i].position < breakPoint + 1.5
     ) {
       trains[i].rerouted = true;
       trains[i].position = breakPoint - trainLength;
@@ -173,7 +175,7 @@ setInterval(() => {
       continue;
     }
 
-    if (trains[i].position === 0 && trains[i].rerouted) {
+    if (trains[i].position <= 0 && trains[i].rerouted) {
       trains[i] = null;
       continue;
     }
