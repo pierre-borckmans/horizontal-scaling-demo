@@ -31,6 +31,7 @@ wss.on("connection", (ws) => {
 
 let trainsStartQueue = [];
 let trains = [];
+
 const trainLength = 12; // in % of the track
 const refreshInterval = 50; // Refresh rate in milliseconds
 const timeFactor = 1000 / refreshInterval; // Factor to adjust speed
@@ -50,6 +51,13 @@ const notifyTrack = () => {
     );
   }
 };
+
+app.post("/reset", (req, res) => {
+  trainsStartQueue = [];
+  trains = [];
+  breakPoint = undefined;
+  res.status(200).send("Reset done");
+});
 
 app.post("/startTrain", (req, res) => {
   if (!wsClient) {

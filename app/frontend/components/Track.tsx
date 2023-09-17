@@ -1,4 +1,3 @@
-import Train from "../public/train.svg";
 import React, { useState } from "react";
 import { BACKEND_URL, HTTP_PROTOCOL, TrainInfo } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";

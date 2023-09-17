@@ -1,9 +1,23 @@
-import Rails from "../public/rails.svg";
+import { useMutation } from "@tanstack/react-query";
+import axios from "axios";
+import { BACKEND_URL, HTTP_PROTOCOL } from "@/types/types";
 
 export default function Title() {
+  const resetTracks = async () => {
+    const response = await axios.post(
+      `${HTTP_PROTOCOL}://${BACKEND_URL}/reset`
+    );
+    return response.data;
+  };
+  const reset = useMutation(resetTracks);
   return (
     <div className="flex w-full items-center justify-center">
-      <div className="absolute right-[18px] top-[18px] flex">
+      <div
+        className="absolute right-[18px] top-[18px] z-30 flex cursor-pointer"
+        onClick={() => {
+          reset.mutate();
+        }}
+      >
         <img src="/logo-dark.svg" width={36} />
       </div>
 

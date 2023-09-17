@@ -95,6 +95,7 @@ func newServer() *echo.Echo {
 
 	e.GET("/*", echo.WrapHandler(http.FileServer(hfsys)))
 
+	e.POST("/reset", handleReset)
 	e.POST("/startTrain", handleStartTrain)
 	e.POST("/breakTrack", handleBreakTrack)
 	e.POST("/repairTrack", handleRepairTrack)
@@ -175,6 +176,38 @@ func watchReplicas(logger echo.Logger) {
 		}
 		time.Sleep(500 * time.Millisecond)
 	}
+}
+
+func handleReset(c echo.Context) error {
+	ips, err := net.LookupHost(BackendHost)
+	if err != nil {
+		log.Err(err).Msg("error looking up host")
+		return err
+	}
+	log.Info().Strs("ips", ips).Msg("found ips for reset")
+
+	client := &http.Client{}
+	for _, ip := range ips {
+		req, err := http.NewRequest("POST", fmt.Sprintf("http://[%s]:3300/reset", ip), nil)
+		req.Header.Set("Content-Type", "application/json")
+		resp, err := client.Do(req)
+		defer resp.Body.Close()
+		if err != nil || resp.StatusCode != http.StatusOK {
+			c.Logger().Error(err)
+			c.Response().WriteHeader(http.StatusInternalServerError)
+			c.Response().Write([]byte(fmt.Sprintf("failed to reset replica %s", ip)))
+			return err
+		}
+		err = replicasWsClients[ip].Close()
+		if err != nil {
+			log.Err(err).Msg("error closing websocket")
+		}
+		delete(replicasWsClients, ip)
+		globalChan <- Msg{RemovedTrack: ip}
+	}
+
+	brokenTracks = make(map[string]bool)
+	return nil
 }
 
 func handleStartTrain(c echo.Context) error {
