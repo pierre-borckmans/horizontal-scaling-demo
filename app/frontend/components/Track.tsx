@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { BACKEND_URL, HTTP_PROTOCOL, TrainInfo } from "@/types/types";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
@@ -22,6 +22,20 @@ export default function Track({
   onRepair,
   breakPoint,
 }: Props) {
+  const breakRef = React.useRef(breakPoint);
+  const [repairing, setRepairing] = useState(false);
+  useEffect(() => {
+    if (breakRef.current && !breakPoint) {
+      setRepairing(true);
+      setTimeout(() => {
+        breakRef.current = breakPoint;
+        setRepairing(false);
+      }, 750);
+    } else {
+      breakRef.current = breakPoint;
+    }
+  }, [breakPoint]);
+
   const breakTrack = async () => {
     const response = await axios.post(
       `${HTTP_PROTOCOL}://${BACKEND_URL}/breakTrack?ip=${ip}`
@@ -111,6 +125,30 @@ export default function Track({
                 width: `${100 - 1 - breakPoint}%`,
               }}
             />
+          </>
+        )}
+
+        <div
+          className="absolute top-0 flex h-full bg-emerald-500/50 px-4"
+          style={{
+            transitionProperty: "opacity",
+            transitionTimingFunction: "ease-out",
+            transitionDuration: "0.5s",
+            opacity: repairing ? 1 : 0,
+            left: `${breakRef.current! + 1}%`,
+            width: `${100 - 1 - breakRef.current!}%`,
+          }}
+        ></div>
+        {repairing && (
+          <>
+            <div
+              className="z-3 absolute top-[-38px] animate-left text-[40px]"
+              style={{
+                left: `${breakRef.current!}%`,
+              }}
+            >
+              🚜
+            </div>
           </>
         )}
 
