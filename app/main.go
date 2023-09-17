@@ -37,10 +37,11 @@ var globalChan = make(chan Msg, 100)
 
 var (
 	//go:embed frontend/out/*
-	embeddedFiles       embed.FS
-	frontendWsConnected = false
-	replicasWsClients   = make(map[string]*websocket.Conn)
-	brokenTracks        = make(map[string]bool)
+	embeddedFiles         embed.FS
+	frontendWsConnected   = false
+	replicasWsConnections = make(map[string]*websocket.Conn)
+	frontendWsConnection  *websocket.Conn
+	tracksBreakpoints     = make(map[string]float64)
 )
 
 func init() {
@@ -107,10 +108,10 @@ func watchReplicas(logger echo.Logger) {
 	for {
 		ips, err := net.LookupHost(BackendHost)
 		if err != nil {
-			log.Err(err).Msg("error looking up host")
+			log.Err(err).Msg("error looking up host watch replicas")
 			continue
 		}
-		for ip := range replicasWsClients {
+		for ip := range replicasWsConnections {
 			found := false
 			for _, backendIP := range ips {
 				if ip == backendIP {
@@ -121,15 +122,19 @@ func watchReplicas(logger echo.Logger) {
 			if !found {
 				logger.Printf("removing ip %s", ip)
 				globalChan <- Msg{RemovedTrack: ip}
-				delete(replicasWsClients, ip)
+				delete(replicasWsConnections, ip)
 			}
 		}
 		log.Info().Strs("ips", ips).Msg("found ips")
 		for _, ip := range ips {
 			clientIP := ip
-			globalChan <- Msg{Track: map[string]interface{}{"ip": clientIP}}
-			if _, ok := replicasWsClients[ip]; !ok || !replicasWsClients[ip].IsClientConn() {
-				replicasWsClients[ip], err = websocket.Dial(fmt.Sprintf("ws://[%s]:3333", ip), "", "http://localhost:4000")
+			if _, ok := tracksBreakpoints[ip]; ok {
+				globalChan <- Msg{Track: map[string]interface{}{"ip": clientIP, "breakPoint": tracksBreakpoints[ip]}}
+			} else {
+				globalChan <- Msg{Track: map[string]interface{}{"ip": clientIP}}
+			}
+			if _, ok := replicasWsConnections[ip]; !ok || !replicasWsConnections[ip].IsClientConn() {
+				replicasWsConnections[ip], err = websocket.Dial(fmt.Sprintf("ws://[%s]:3333", ip), "", "http://localhost:4000")
 				if err != nil {
 					log.Err(err).Str("ip", ip).Msg("error dialing websocket for ip")
 					continue
@@ -141,8 +146,8 @@ func watchReplicas(logger echo.Logger) {
 						err := websocket.Message.Receive(ws, &msg)
 						if err != nil {
 							log.Err(err).Str("ip", ip).Msg("error receiving message from backend")
-							delete(replicasWsClients, clientIP) // Remove the broken socket from the map
-							return                              // Attempt to reconnect on the next iteration
+							delete(replicasWsConnections, clientIP) // Remove the broken socket from the map
+							return                                  // Attempt to reconnect on the next iteration
 						}
 						var msgMap map[string]interface{}
 						err = json.Unmarshal([]byte(msg), &msgMap)
@@ -160,18 +165,18 @@ func watchReplicas(logger echo.Logger) {
 							var trackMsg = msgMap["track"].(map[string]interface{})
 							if _, ok := trackMsg["breakPoint"]; ok {
 								if trackMsg["breakPoint"] == nil {
-									brokenTracks[clientIP] = false
+									delete(tracksBreakpoints, clientIP)
 								} else {
-									brokenTracks[clientIP] = true
+									tracksBreakpoints[clientIP] = trackMsg["breakPoint"].(float64)
 								}
 							} else {
-								brokenTracks[clientIP] = false
+								delete(tracksBreakpoints, clientIP)
 							}
 							trackMsg["ip"] = clientIP
 							globalChan <- Msg{Track: trackMsg}
 						}
 					}
-				}(replicasWsClients[ip], clientIP)
+				}(replicasWsConnections[ip], clientIP)
 			}
 		}
 		time.Sleep(500 * time.Millisecond)
@@ -181,7 +186,7 @@ func watchReplicas(logger echo.Logger) {
 func handleReset(c echo.Context) error {
 	ips, err := net.LookupHost(BackendHost)
 	if err != nil {
-		log.Err(err).Msg("error looking up host")
+		log.Err(err).Msg("error looking up host reset")
 		return err
 	}
 	log.Info().Strs("ips", ips).Msg("found ips for reset")
@@ -198,15 +203,19 @@ func handleReset(c echo.Context) error {
 			c.Response().Write([]byte(fmt.Sprintf("failed to reset replica %s", ip)))
 			return err
 		}
-		err = replicasWsClients[ip].Close()
+		err = replicasWsConnections[ip].Close()
 		if err != nil {
 			log.Err(err).Msg("error closing websocket")
 		}
-		delete(replicasWsClients, ip)
+		delete(replicasWsConnections, ip)
 		globalChan <- Msg{RemovedTrack: ip}
 	}
 
-	brokenTracks = make(map[string]bool)
+	err = frontendWsConnection.Close()
+	if err != nil {
+		log.Err(err).Msg("error closing websocket")
+	}
+	tracksBreakpoints = make(map[string]float64)
 	return nil
 }
 
@@ -215,7 +224,7 @@ func handleStartTrain(c echo.Context) error {
 	id := c.FormValue("id")
 	ips, err := net.LookupHost(BackendHost)
 	if err != nil {
-		log.Err(err).Msg("error looking up host")
+		log.Err(err).Msg("error looking up host start train")
 		return err
 	}
 	log.Info().Strs("ips", ips).Msg("found ips for start train")
@@ -225,8 +234,7 @@ func handleStartTrain(c echo.Context) error {
 	for {
 		// select one ip at random
 		selectedIP = ips[rand.Intn(len(ips))]
-		println(brokenTracks[selectedIP])
-		if !brokenTracks[selectedIP] {
+		if _, ok := tracksBreakpoints[selectedIP]; !ok {
 			c.Logger().Info(fmt.Sprintf("selected ip %s", selectedIP))
 			break
 		}
@@ -337,13 +345,19 @@ func handleWebSocket(c echo.Context) error {
 	}
 	c.Logger().Info("Websocket connection established")
 	websocket.Handler(func(ws *websocket.Conn) {
+		frontendWsConnection = ws
+		frontendWsConnected = true
 		defer func() {
 			c.Logger().Info("Websocket connection closed")
 			ws.Close()
 			frontendWsConnected = false
+			frontendWsConnection = nil
 		}()
 		for {
-			frontendWsConnected = true
+			if !frontendWsConnected {
+				c.Logger().Info("Websocket connection closed, stopping read loop")
+				break
+			}
 			// Read from the global channel and forward to the client WebSocket
 			msg := <-globalChan
 			b, err := json.Marshal(msg)

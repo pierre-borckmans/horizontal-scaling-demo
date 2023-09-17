@@ -72,7 +72,7 @@ app.post("/startTrain", (req, res) => {
   const newTrain = {
     id,
     speed,
-    position: -1,
+    position: req.query.id ? 0.1 : -1,
     rerouted: !!req.query.id,
     braking: false,
   };
@@ -114,7 +114,11 @@ app.post("/repairTrack", (req, res) => {
 setInterval(() => {
   if (trainsStartQueue.length) {
     if (!trains.some((t) => t && t.position <= trainLength + 1.5)) {
-      trains.push(trainsStartQueue.shift());
+      const newTrain = trainsStartQueue.shift();
+      if (breakPoint) {
+        newTrain.speed *= -1;
+      }
+      trains.push(newTrain);
     }
   }
 
@@ -128,6 +132,7 @@ setInterval(() => {
       (t) =>
         t &&
         t.id !== trains[i].id &&
+        trains[i].position > 0 &&
         t.position - trains[i].position > 0 &&
         t.position - trains[i].position <= trainLength + 1.5,
     );

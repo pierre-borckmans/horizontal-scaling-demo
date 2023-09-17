@@ -20,6 +20,7 @@ import {
 import Connecting from "@/components/Connecting";
 
 export default function Home() {
+  const ws = React.useRef<WebSocket | null>(null);
   const [wsConnected, setWsConnected] = useState(false);
   const [trains, setTrains] = useState<TrainInfo[]>([]);
   const [tracks, setTracks] = useState<Record<string, TrackInfo>>({});
@@ -35,100 +36,103 @@ export default function Home() {
     }
   }, [timerStart, trainsRemaining]);
 
-  useEffect(() => {
-    const connectWebSocket = () => {
-      console.log("Connecting to WebSocket");
-      let ws = new WebSocket(`${WS_PROTOCOL}://${BACKEND_URL}/ws`);
+  const connectWebSocket = () => {
+    console.log("Connecting to WebSocket");
+    ws.current = new WebSocket(`${WS_PROTOCOL}://${BACKEND_URL}/ws`);
 
-      ws.addEventListener("open", () => {
-        console.log("WebSocket connection opened");
-        setWsConnected(true);
-      });
+    ws.current.addEventListener("open", () => {
+      console.log("WebSocket connection opened");
+      setWsConnected(true);
+    });
 
-      ws.addEventListener("close", () => {
-        setWsConnected(false);
-        console.log("WebSocket connection closed");
-        setTimeout(connectWebSocket, 1000);
-      });
+    ws.current.addEventListener("close", () => {
+      setWsConnected(false);
+      console.log("WebSocket connection closed");
+      setTimeout(connectWebSocket, 1000);
+    });
 
-      ws.addEventListener("message", (event) => {
-        const msg = JSON.parse(event.data) as Msg;
+    ws.current.addEventListener("message", (event: any) => {
+      const msg = JSON.parse(event.data) as Msg;
 
-        if (msg.track) {
-          setTracks((prevTracks) => {
-            if (!prevTracks[msg.track!.ip!]) {
-              prevTracks[msg.track!.ip!] = {
-                ip: msg.track!.ip!,
-                breakPoint: msg.track!.breakPoint,
-              };
-              return { ...prevTracks };
-            }
-            prevTracks[msg.track!.ip!].ip = msg.track!.ip!;
-            if (msg.track!.breakPoint !== undefined) {
-              prevTracks[msg.track!.ip!].breakPoint = msg.track!.breakPoint;
-            }
+      if (msg.track) {
+        setTracks((prevTracks) => {
+          if (!prevTracks[msg.track!.ip!]) {
+            prevTracks[msg.track!.ip!] = {
+              ip: msg.track!.ip!,
+              breakPoint: msg.track!.breakPoint,
+            };
             return { ...prevTracks };
-          });
-        }
-
-        if (msg.removed) {
-          setTracks((prevTracks) => {
-            delete prevTracks[msg.removed!];
-            return { ...prevTracks };
-          });
-        }
-
-        if (!msg.train) {
-          return;
-        }
-
-        const trainData = msg.train as TrainInfo;
-        trainData.track = msg.track!.ip!;
-
-        setTrains((prevTrains) => {
-          const existingTrainIndex = prevTrains.findIndex(
-            (train) => train.id === trainData.id
-          );
-
-          if (existingTrainIndex >= 0) {
-            const updatedTrains = [...prevTrains];
-            updatedTrains[existingTrainIndex] = trainData;
-            return updatedTrains;
           }
-
-          return [...prevTrains, trainData];
+          prevTracks[msg.track!.ip!].ip = msg.track!.ip!;
+          if (msg.track!.breakPoint !== undefined) {
+            prevTracks[msg.track!.ip!].breakPoint = msg.track!.breakPoint;
+          }
+          return { ...prevTracks };
         });
+      }
 
-        if (trainData.position === 100) {
-          setTrainsRemaining((prev) => prev - 1);
+      if (msg.removed) {
+        setTracks((prevTracks) => {
+          delete prevTracks[msg.removed!];
+          return { ...prevTracks };
+        });
+      }
+
+      if (!msg.train) {
+        return;
+      }
+
+      const trainData = msg.train as TrainInfo;
+      trainData.track = msg.track!.ip!;
+
+      setTrains((prevTrains) => {
+        const existingTrainIndex = prevTrains.findIndex(
+          (train) => train.id === trainData.id
+        );
+
+        if (existingTrainIndex >= 0) {
+          const updatedTrains = [...prevTrains];
+          updatedTrains[existingTrainIndex] = trainData;
+          return updatedTrains;
         }
 
-        setTimeout(() => {
-          if (trainData.position === 100) {
-            setTrains((prevTrains) => {
-              return prevTrains.filter((train) => train.id !== trainData.id);
-            });
-          }
-
-          if (trainData.position === 0 && trainData.rerouted) {
-            setTrains((prevTrains) => {
-              return prevTrains.filter((train) => train.id !== trainData.id);
-            });
-            setTrainsInTransit((old) => old - 1);
-            startTrainMutation.mutate({
-              speed: -trainData.speed,
-              id: trainData.id,
-            });
-          }
-        }, 500);
+        return [...prevTrains, trainData];
       });
-      return ws;
-    };
 
-    const ws = connectWebSocket();
+      if (trainData.position === 100) {
+        setTrainsRemaining((prev) => prev - 1);
+      }
+
+      if (
+        trainData.position <= 0 &&
+        trainData.rerouted
+        // trainData.speed < 0
+      ) {
+        setTrains((prevTrains) => {
+          return prevTrains.filter((train) => train.id !== trainData.id);
+        });
+        setTrainsInTransit((old) => old - 1);
+        startTrainMutation.mutate({
+          speed: Math.abs(trainData.speed),
+          id: trainData.id,
+        });
+      }
+
+      setTimeout(() => {
+        if (trainData.position === 100) {
+          setTrains((prevTrains) => {
+            return prevTrains.filter((train) => train.id !== trainData.id);
+          });
+        }
+      }, 500);
+    });
+  };
+
+  useEffect(() => {
+    connectWebSocket();
 
     return () => {
-      ws.close();
+      ws.current?.close();
     };
   }, []);
 
@@ -155,7 +159,19 @@ export default function Home() {
 
   return (
     <>
-      <Title />
+      <Title
+        onReset={() => {
+          // ws.current?.close();
+          setTimeout(() => {
+            setTimerStart(null);
+            setDuration(null);
+            setTrainsRemaining(NUM_TRAINS);
+            setTrainsInTransit(0);
+            setTracks({});
+            setTrains([]);
+          }, 500);
+        }}
+      />
 
       <Status
         trainsRemaining={trainsRemaining}

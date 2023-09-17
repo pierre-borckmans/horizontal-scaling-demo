@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { BACKEND_URL, HTTP_PROTOCOL } from "@/types/types";
 
-export default function Title() {
+export default function Title({ onReset }: { onReset?: () => void }) {
   const resetTracks = async () => {
     const response = await axios.post(
       `${HTTP_PROTOCOL}://${BACKEND_URL}/reset`
@@ -14,8 +14,9 @@ export default function Title() {
     <div className="flex w-full items-center justify-center">
       <div
         className="absolute right-[18px] top-[18px] z-30 flex cursor-pointer"
-        onClick={() => {
+        onDoubleClick={() => {
           reset.mutate();
+          onReset && onReset();
         }}
       >
         <img src="/logo-dark.svg" width={36} />
