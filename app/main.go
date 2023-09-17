@@ -118,6 +118,7 @@ func watchReplicas(logger echo.Logger) {
 				}
 			}
 			if !found {
+				logger.Printf("removing ip %s", ip)
 				globalChan <- Msg{RemovedTrack: ip}
 				delete(replicasWsClients, ip)
 			}
