@@ -18,7 +18,7 @@ import {
   TrainInfo,
   WS_PROTOCOL,
 } from "@/types/types";
-import "../styles/app.css";
+import Connecting from "@/components/Connecting";
 
 export default function Home() {
   const [wsConnected, setWsConnected] = useState(false);
@@ -151,22 +151,7 @@ export default function Home() {
   const trainsBraking = trains.filter((t) => t.braking).length;
 
   if (!wsConnected) {
-    return (
-      <>
-        <Title />
-        <div className="flex h-48 flex-col items-center justify-center gap-1 text-white">
-          <span>Connecting to the backend...</span>
-          <span>
-            Make sure there are no other instances of this app running.
-          </span>
-          <div className="mt-4 flex animate-wiggle items-center justify-center gap-4">
-            <Train className="h-6" />
-            <Train className="h-6" />
-            <Train className="h-6" />
-          </div>
-        </div>
-      </>
-    );
+    return <Connecting />;
   }
 
   return (
