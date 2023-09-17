@@ -94,7 +94,7 @@ app.post("/breakTrack", (req, res) => {
     return;
   }
   console.log("Track is broken");
-  breakPoint = 70;
+  breakPoint = 50 + Math.random() * 35;
   notifyTrack();
   res.status(200).send("Track is broken");
 });
