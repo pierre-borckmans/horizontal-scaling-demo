@@ -37,9 +37,10 @@ var globalChan = make(chan Msg, 100)
 
 var (
 	//go:embed frontend/out/*
-	embeddedFiles embed.FS
-	wsClients     = make(map[string]*websocket.Conn)
-	brokenTracks  = make(map[string]bool)
+	embeddedFiles       embed.FS
+	frontendWsConnected = false
+	replicasWsClients   = make(map[string]*websocket.Conn)
+	brokenTracks        = make(map[string]bool)
 )
 
 func init() {
@@ -108,7 +109,7 @@ func watchReplicas(logger echo.Logger) {
 			log.Err(err).Msg("error looking up host")
 			continue
 		}
-		for ip := range wsClients {
+		for ip := range replicasWsClients {
 			found := false
 			for _, backendIP := range ips {
 				if ip == backendIP {
@@ -118,15 +119,15 @@ func watchReplicas(logger echo.Logger) {
 			}
 			if !found {
 				globalChan <- Msg{RemovedTrack: ip}
-				delete(wsClients, ip)
+				delete(replicasWsClients, ip)
 			}
 		}
 		log.Info().Strs("ips", ips).Msg("found ips")
 		for _, ip := range ips {
 			clientIP := ip
 			globalChan <- Msg{Track: map[string]interface{}{"ip": clientIP}}
-			if _, ok := wsClients[ip]; !ok || !wsClients[ip].IsClientConn() {
-				wsClients[ip], err = websocket.Dial(fmt.Sprintf("ws://[%s]:3333", ip), "", "http://localhost:4000")
+			if _, ok := replicasWsClients[ip]; !ok || !replicasWsClients[ip].IsClientConn() {
+				replicasWsClients[ip], err = websocket.Dial(fmt.Sprintf("ws://[%s]:3333", ip), "", "http://localhost:4000")
 				if err != nil {
 					log.Err(err).Str("ip", ip).Msg("error dialing websocket for ip")
 					continue
@@ -138,8 +139,8 @@ func watchReplicas(logger echo.Logger) {
 						err := websocket.Message.Receive(ws, &msg)
 						if err != nil {
 							log.Err(err).Str("ip", ip).Msg("error receiving message from backend")
-							delete(wsClients, clientIP) // Remove the broken socket from the map
-							return                      // Attempt to reconnect on the next iteration
+							delete(replicasWsClients, clientIP) // Remove the broken socket from the map
+							return                              // Attempt to reconnect on the next iteration
 						}
 						var msgMap map[string]interface{}
 						err = json.Unmarshal([]byte(msg), &msgMap)
@@ -168,7 +169,7 @@ func watchReplicas(logger echo.Logger) {
 							globalChan <- Msg{Track: trackMsg}
 						}
 					}
-				}(wsClients[ip], clientIP)
+				}(replicasWsClients[ip], clientIP)
 			}
 		}
 		time.Sleep(500 * time.Millisecond)
@@ -295,9 +296,19 @@ func handleRepairTrack(c echo.Context) error {
 }
 
 func handleWebSocket(c echo.Context) error {
+	if frontendWsConnected {
+		c.Logger().Info("Websocket connection already established")
+		return nil
+	}
+	c.Logger().Info("Websocket connection established")
 	websocket.Handler(func(ws *websocket.Conn) {
-		defer ws.Close()
+		defer func() {
+			c.Logger().Info("Websocket connection closed")
+			ws.Close()
+			frontendWsConnected = false
+		}()
 		for {
+			frontendWsConnected = true
 			// Read from the global channel and forward to the client WebSocket
 			msg := <-globalChan
 			b, err := json.Marshal(msg)

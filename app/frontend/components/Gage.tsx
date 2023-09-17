@@ -46,7 +46,7 @@ export function Gage(props: Props) {
           const showText = asValue % 20 === 0;
 
           return (
-            <React.Fragment>
+            <React.Fragment key={angle}>
               <line
                 className={cc([
                   "stroke-gray-300",

@@ -9,9 +9,24 @@ const wsPort = 3333;
 const app = express();
 app.use(cors());
 const server = http.createServer(app);
-const wss = new WebSocket.Server({ port: wsPort });
 server.listen(httpPort, () => {
   console.log(`Server started on http://0.0.0.0:${httpPort}/`);
+});
+
+const wss = new WebSocket.Server({ port: wsPort });
+let wsClient = null;
+wss.on("connection", (ws) => {
+  if (wsClient) {
+    console.log("A client is already connected, closing new connection");
+    ws.close();
+    return;
+  }
+  console.log("New client connected");
+  wsClient = ws;
+  ws.on("close", () => {
+    console.log("Client disconnected");
+    wsClient = null;
+  });
 });
 
 let trains = [];
@@ -24,20 +39,22 @@ const maxSpeed = 60;
 let breakPoint = undefined;
 
 const notifyTrack = () => {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(
-        JSON.stringify({
-          track: {
-            breakPoint,
-          },
-        }),
-      );
-    }
-  });
+  if (wsClient && wsClient.readyState === WebSocket.OPEN) {
+    wsClient.send(
+      JSON.stringify({
+        track: {
+          breakPoint,
+        },
+      }),
+    );
+  }
 };
 
 app.post("/startTrain", (req, res) => {
+  if (!wsClient) {
+    res.status(500).send("No client connected");
+    return;
+  }
   console.log("New train", req.query);
   const id = (req.query && req.query.id) || uuidv4();
   const speed =
@@ -55,12 +72,20 @@ app.post("/startTrain", (req, res) => {
 });
 
 app.post("/breakTrack", (req, res) => {
+  if (!wsClient) {
+    res.status(500).send("No client connected");
+    return;
+  }
   console.log("Track is broken");
   breakPoint = 70;
   notifyTrack();
 });
 
 app.post("/repairTrack", (req, res) => {
+  if (!wsClient) {
+    res.status(500).send("No client connected");
+    return;
+  }
   console.log("Track is repaired");
   breakPoint = null;
   notifyTrack();
@@ -107,21 +132,19 @@ setInterval(() => {
     }
 
     // Send position updates as JSON
-    wss.clients.forEach((client) => {
-      if (client.readyState === WebSocket.OPEN) {
-        client.send(
-          JSON.stringify({
-            train: {
-              id: trains[i].id,
-              position: trains[i].position,
-              speed: currentSpeed,
-              braking,
-              rerouted: trains[i].rerouted,
-            },
-          }),
-        );
-      }
-    });
+    if (wsClient && wsClient.readyState === WebSocket.OPEN) {
+      wsClient.send(
+        JSON.stringify({
+          train: {
+            id: trains[i].id,
+            position: trains[i].position,
+            speed: currentSpeed,
+            braking,
+            rerouted: trains[i].rerouted,
+          },
+        }),
+      );
+    }
 
     if (trains[i].position >= 100) {
       trains[i] = null;
@@ -136,15 +159,13 @@ setInterval(() => {
 }, refreshInterval);
 
 setInterval(() => {
-  wss.clients.forEach((client) => {
-    if (client.readyState === WebSocket.OPEN) {
-      client.send(
-        JSON.stringify({
-          track: {
-            breakPoint,
-          },
-        }),
-      );
-    }
-  });
+  if (wsClient && wsClient.readyState === WebSocket.OPEN) {
+    wsClient.send(
+      JSON.stringify({
+        track: {
+          breakPoint,
+        },
+      }),
+    );
+  }
 }, 500);

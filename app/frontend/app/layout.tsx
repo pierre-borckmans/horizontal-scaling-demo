@@ -19,7 +19,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Providers>{children}</Providers>
+        <main
+          className="app flex h-fit min-h-screen w-full min-w-0 flex-col items-center overflow-hidden px-2 pt-8"
+          style={{}}
+        >
+          {" "}
+          <Providers>{children}</Providers>
+        </main>
       </body>
     </html>
   );
