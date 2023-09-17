@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
-import Train from "../public/train.svg";
 import { Gage } from "@/components/Gage";
 import Title from "@/components/Title";
 import Track from "@/components/Track";

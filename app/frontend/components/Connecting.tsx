@@ -8,10 +8,7 @@ export default function Connecting() {
       <Title />
       <div className="flex h-40 w-full flex-col items-center justify-center gap-2 text-white">
         <span>Connecting to the backend...</span>
-        <span
-          className="flex w-full items-center justify-center text-center text-sm text-white/60 lg:text-lg"
-          style={{ textWrap: "balance" }}
-        >
+        <span className="text-balance flex w-full items-center justify-center text-center text-sm text-white/60 lg:text-lg">
           Make sure there are no other instances of this app running.
         </span>
         <div className="mt-4 flex animate-wiggle items-center justify-center gap-4">

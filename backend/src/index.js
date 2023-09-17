@@ -29,6 +29,7 @@ wss.on("connection", (ws) => {
   });
 });
 
+let trainsStartQueue = [];
 let trains = [];
 const trainLength = 12; // in % of the track
 const refreshInterval = 50; // Refresh rate in milliseconds
@@ -63,11 +64,19 @@ app.post("/startTrain", (req, res) => {
   const newTrain = {
     id,
     speed,
-    position: 0,
+    position: -1,
     rerouted: !!req.query.id,
+    braking: false,
   };
   console.log("New train", newTrain.id);
-  trains.push(newTrain);
+  trainsStartQueue.push(newTrain);
+  if (wsClient && wsClient.readyState === WebSocket.OPEN) {
+    wsClient.send(
+      JSON.stringify({
+        train: newTrain,
+      }),
+    );
+  }
   res.json(newTrain);
 });
 
@@ -93,6 +102,12 @@ app.post("/repairTrack", (req, res) => {
 
 // Simulation
 setInterval(() => {
+  if (trainsStartQueue.length) {
+    if (!trains.some((t) => t && t.position <= trainLength + 1.5)) {
+      trains.push(trainsStartQueue.shift());
+    }
+  }
+
   for (let i = 0; i < trains.length; i++) {
     if (!trains[i]) continue;
 
@@ -103,7 +118,7 @@ setInterval(() => {
       (t) =>
         t &&
         t.id !== trains[i].id &&
-        t.position - trains[i].position - 1.5 > 0 &&
+        t.position - trains[i].position > 0 &&
         t.position - trains[i].position <= trainLength + 1.5,
     );
 
@@ -123,7 +138,11 @@ setInterval(() => {
       );
     }
 
-    if (breakPoint && trains[i].position >= breakPoint) {
+    if (
+      breakPoint &&
+      trains[i].position >= breakPoint - 0.5 &&
+      trains[i].position < breakPoint + 1
+    ) {
       trains[i].rerouted = true;
       trains[i].position = breakPoint - trainLength;
       trains[i].speed *= -1;
@@ -171,4 +190,4 @@ setInterval(() => {
       }),
     );
   }
-}, 500);
+}, 200);
