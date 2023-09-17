@@ -99,20 +99,22 @@ setInterval(() => {
     let currentSpeed = trains[i].speed;
     let braking = false;
 
-    if (
-      i > 0 &&
-      trains[i - 1] &&
-      trains[i - 1].position - trains[i].position <= trainLength + 1.5
-    ) {
+    const collidingTrain = trains.find(
+      (t) =>
+        t &&
+        t.id !== trains[i].id &&
+        t.position - trains[i].position - 1.5 > 0 &&
+        t.position - trains[i].position <= trainLength + 1.5,
+    );
+
+    if (collidingTrain) {
       // Match speed and position of the train in front
       trains[i].position = Math.max(
         0,
-        trains[i - 1].position - trainLength - 0.5,
+        collidingTrain.position - trainLength - 0.5,
       );
-      currentSpeed = trains[i].position === 0 ? 0 : trains[i - 1].speed;
+      currentSpeed = trains[i].position === 0 ? 0 : collidingTrain.speed;
       braking = true;
-      // if (trains[i - 1].position - trains[i].position - trainLength < 15) {
-      // }
     } else {
       // Move the train
       trains[i].position = Math.max(
@@ -126,6 +128,7 @@ setInterval(() => {
       trains[i].position = breakPoint - trainLength;
       trains[i].speed *= -1;
       for (let j = i + 1; j < trains.length; j++) {
+        if (!trains[j]) continue;
         trains[j].rerouted = true;
         trains[j].speed *= -1;
       }

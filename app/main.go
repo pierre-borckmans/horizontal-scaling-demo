@@ -200,6 +200,7 @@ func handleStartTrain(c echo.Context) error {
 		i++
 		if i > 20 {
 			c.Response().WriteHeader(http.StatusInternalServerError)
+			c.Response().Write([]byte("no working brokenTracks found"))
 			return fmt.Errorf("no working brokenTracks found")
 		}
 	}
